@@ -1,7 +1,10 @@
 package com.wpj.paper.service.biz.ms;
 
 import com.wpj.paper.dao.entity.BillSource;
+import com.wpj.paper.dao.entity.OrderSource;
+import com.wpj.paper.dao.entity.RechargeSource;
 import com.wpj.paper.service.AbstractBizService;
+import com.wpj.paper.service.plan.PlanService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,17 +13,17 @@ import org.springframework.transaction.annotation.Transactional;
 @Service("MsRu")
 public class MsRuServiceImpl extends AbstractBizService {
     @Override
-    public boolean usageBill(BillSource billSource) {
-        return false;
+    public Object usageBill(BillSource billSource, PlanService<?> planService) {
+        return planService.execute(() -> doUsageBill(billSource), billSource.getUserId());
     }
 
     @Override
-    public boolean packageBill() {
-        return false;
+    public Object packageBill(OrderSource orderSource, PlanService<?> planService) {
+        return planService.execute(() -> doPackageBill(orderSource), orderSource.getUserId());
     }
 
     @Override
-    public boolean recharge() {
-        return false;
+    public Object recharge(RechargeSource rechargeSource, PlanService<?> planService) {
+        return planService.execute(() -> doRecharge(rechargeSource), rechargeSource.getUserId());
     }
 }

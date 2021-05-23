@@ -9,12 +9,36 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class BizFactory {
 
-    @Value("${bizImplCode}")
-    private String bizImplCode;
+    @Value("${isolation.ssi}")
+    private String ssiCode;
 
-    @Bean
-    public BaseBizService bizService(ApplicationContext applicationContext) {
-        return applicationContext.getBean(bizImplCode, BaseBizService.class);
+    @Value("${isolation.rr}")
+    private String rrCode;
+
+    @Value("${isolation.rc}")
+    private String rcCode;
+
+    @Value("${isolation.ru}")
+    private String ruCode;
+
+    @Bean("ssi")
+    public BaseBizService ssi(ApplicationContext applicationContext) {
+        return applicationContext.getBean(ssiCode, BaseBizService.class);
+    }
+
+    @Bean("rr")
+    public BaseBizService rr(ApplicationContext applicationContext) {
+        return applicationContext.getBean(rrCode, BaseBizService.class);
+    }
+
+    @Bean("rc")
+    public BaseBizService rc(ApplicationContext applicationContext) {
+        return applicationContext.getBean(rcCode, BaseBizService.class);
+    }
+
+    @Bean("ru")
+    public BaseBizService ru(ApplicationContext applicationContext) {
+        return applicationContext.getBean(ruCode, BaseBizService.class);
     }
 
 }

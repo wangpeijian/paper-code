@@ -5,4 +5,10 @@ spring:
     redis:
         host: localhost
 
-bizImplCode: MyRc
+config:
+    user-max: 1000
+    cash-init: 10000
+    credit-init: 20000
+    product-max: 100
+    product-stock-max: 500
+    pool-size: 16

@@ -23,7 +23,6 @@ public class Disperser {
      */
     public static long get(long max, float factor) {
         float part = new Random().nextInt(10);
-        log.info("p={}", part);
         if (part >= factor * 10) {
             return new Random().nextInt((int) (max * factor)) + 1;
         } else {

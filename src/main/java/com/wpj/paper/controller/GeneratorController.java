@@ -1,6 +1,10 @@
 package com.wpj.paper.controller;
 
-import com.wpj.paper.dao.entity.*;
+import com.wpj.paper.config.ConfigData;
+import com.wpj.paper.dao.entity.AccountCash;
+import com.wpj.paper.dao.entity.AccountCredit;
+import com.wpj.paper.dao.entity.Product;
+import com.wpj.paper.dao.entity.User;
 import com.wpj.paper.dao.repo.*;
 import com.wpj.paper.vo.Result;
 import lombok.extern.slf4j.Slf4j;
@@ -34,26 +38,34 @@ public class GeneratorController {
     @Autowired
     BillSourceRepository billSourceRepository;
 
-    final private long userMax = 300;
-    final private long cashInit = 10000L;
-    final private long creditInit = 20000L;
+    @Autowired
+    OrderSourceRepository orderSourceRepository;
 
-    final private long productMax = 100;
-    final private long productStockMax = 500;
+    @Autowired
+    RechargeSourceRepository rechargeSourceRepository;
 
-    final private long billMax = 10 * 10000;
-    final private long billPriceMax = 500;
+    @Autowired
+    TradeRepository tradeRepository;
+
+    @Autowired
+    ConfigData configData;
 
     /**
-     * 创建用户相关数据
+     * 重置数据
      *
      * @return
      */
     @GetMapping(value = "/reset")
     public Result<?> reset() {
-        log.info("reset accountCashRepository: {}", accountCashRepository.updateAll(cashInit));
-        log.info("reset accountCreditRepository: {}", accountCreditRepository.updateAll(creditInit));
-        log.info("reset productRepository: {}", productRepository.updateAll(creditInit));
+        log.info("reset accountCashRepository: {}", accountCashRepository.updateAll(configData.getCashInit()));
+        log.info("reset accountCreditRepository: {}", accountCreditRepository.updateAll(configData.getCreditInit()));
+        log.info("reset productRepository: {}", productRepository.updateAll(configData.getProductStockMax()));
+
+        billSourceRepository.deleteAll();
+        orderSourceRepository.deleteAll();
+        rechargeSourceRepository.deleteAll();
+        tradeRepository.deleteAll();
+
         return Result.ok();
     }
 
@@ -64,21 +76,21 @@ public class GeneratorController {
      */
     @GetMapping(value = "/user")
     public Result<?> user() {
-        userRepository.deleteAll();
         accountCashRepository.deleteAll();
         accountCreditRepository.deleteAll();
+        userRepository.deleteAll();
 
         long i = 0;
         ArrayList<User> user = new ArrayList<>(100);
         ArrayList<AccountCash> cash = new ArrayList<>(100);
         ArrayList<AccountCredit> credit = new ArrayList<>(100);
 
-        while (i++ < userMax) {
+        while (i++ < configData.getUserMax()) {
             String uuid = UUID.randomUUID().toString().replace("-", "");
 
             user.add(new User(i, uuid.substring(16, 24)));
-            cash.add(new AccountCash(i, cashInit));
-            credit.add(new AccountCredit(i, creditInit, creditInit));
+            cash.add(new AccountCash(i, configData.getCashInit()));
+            credit.add(new AccountCredit(i, configData.getCashInit(), configData.getCreditInit()));
 
             if (user.size() == 100) {
                 userRepository.saveAll(user);
@@ -103,39 +115,16 @@ public class GeneratorController {
     public Result<?> product() {
         productRepository.deleteAll();
 
-        int i = 0;
+        long i = 0;
         ArrayList<Product> products = new ArrayList<>(100);
 
-        while (i++ < productMax) {
+        while (i++ < configData.getProductMax()) {
             String uuid = UUID.randomUUID().toString().replace("-", "");
 
-            products.add(new Product((long) i, uuid.substring(16, 24), productStockMax));
+            products.add(new Product(i, uuid.substring(16, 24), configData.getProductStockMax()));
             if (products.size() == 100) {
                 productRepository.saveAll(products);
                 products.clear();
-            }
-        }
-
-        return Result.ok();
-    }
-
-    /**
-     * @return
-     */
-    @GetMapping(value = "/bill")
-    public Result<?> bill() {
-        billSourceRepository.deleteAll();
-
-        int i = 0;
-        ArrayList<BillSource> bills = new ArrayList<>(100);
-
-        while (i++ < billMax) {
-            String uuid = UUID.randomUUID().toString().replace("-", "");
-
-//            bills.add(new BillSource((long) i, uuid.substring(16, 24), productStockMax));
-            if (bills.size() == 100) {
-                billSourceRepository.saveAll(bills);
-                bills.clear();
             }
         }
 

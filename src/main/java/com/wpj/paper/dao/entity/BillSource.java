@@ -13,6 +13,14 @@ import javax.persistence.Id;
 @NoArgsConstructor
 public class BillSource {
 
+    public BillSource(Long id, Long userId, Long amount, Long billId) {
+        this.id = id;
+        this.userId = userId;
+        this.amount = amount;
+        this.billId = billId;
+        this.statusCode = 0L;
+    }
+
     @Id
     private Long id;
 

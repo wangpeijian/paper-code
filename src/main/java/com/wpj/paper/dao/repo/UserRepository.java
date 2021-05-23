@@ -10,10 +10,13 @@ import java.util.List;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    @Query(value = "SELECT * FROM user WHERE name = :name", nativeQuery = true)
+    @Query(value = "SELECT * FROM `user` WHERE name = :name", nativeQuery = true)
     List<User> findByName(@Param("name") String name);
 
     @Modifying
-    @Query(value = "insert into user values (:id, :name)", nativeQuery = true)
+    @Query(value = "insert into `user` values (:id, :name)", nativeQuery = true)
     int add(@Param("id") Long id, @Param("name") String name);
+
+    @Query(value = "select * from `user` where id = :uid for update", nativeQuery = true)
+    User forUpdateLock(long uid);
 }
