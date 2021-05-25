@@ -1,22 +1,19 @@
 package com.wpj.paper.service;
 
-import com.wpj.paper.dao.entity.BillSource;
-import com.wpj.paper.dao.entity.OrderSource;
-import com.wpj.paper.dao.entity.Product;
-import com.wpj.paper.dao.entity.RechargeSource;
 import com.wpj.paper.service.plan.PlanService;
 
 import java.util.List;
+import java.util.Set;
 
 public interface BaseBizService {
 
-    Object usageBill(BillSource billSource, PlanService<?> planService);
+    Object usageBill(long userId, PlanService<?> planService);
 
-    Object packageBill(OrderSource orderSource, PlanService<?> planService);
+    Object packageBill(long userId, PlanService<?> planService);
 
-    Object recharge(RechargeSource rechargeSource, PlanService<?> planService);
+    Object recharge(Set<Long> userIds, PlanService<?> planService);
 
-    List<OrderSource> searchOrder();
+    List<?> searchOrder();
 
-    List<Product> searchStock();
+    List<?> searchStock();
 }

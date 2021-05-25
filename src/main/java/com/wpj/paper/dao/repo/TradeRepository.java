@@ -15,4 +15,8 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
     @Modifying
     @Query(value = "update trade set debt = :debt, cash += :cash where id = :id", nativeQuery = true)
     int clearDebt(long id, long cash, long debt);
+
+    @Modifying
+    @Query(value = "insert into trade (id, cash, cash_balance, create_time, credit, credit_balance, debt, source_id, type, user_id) values (:#{#trade.id}, :#{#trade.cash}, :#{#trade.cashBalance}, :#{#trade.createTime}, :#{#trade.credit}, :#{#trade.creditBalance}, :#{#trade.debt}, :#{#trade.sourceId}, :#{#trade.type}, :#{#trade.userId})", nativeQuery = true)
+    int insert(Trade trade);
 }

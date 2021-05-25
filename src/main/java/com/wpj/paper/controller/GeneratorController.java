@@ -6,6 +6,7 @@ import com.wpj.paper.dao.entity.AccountCredit;
 import com.wpj.paper.dao.entity.Product;
 import com.wpj.paper.dao.entity.User;
 import com.wpj.paper.dao.repo.*;
+import com.wpj.paper.service.GeneratorService;
 import com.wpj.paper.vo.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,7 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.UUID;
 
-@Transactional
+
 @Slf4j
 @RestController
 @RequestMapping(value = "/gen")
@@ -50,11 +51,15 @@ public class GeneratorController {
     @Autowired
     ConfigData configData;
 
+    @Autowired
+    GeneratorService generatorService;
+
     /**
      * 重置数据
      *
      * @return
      */
+    @Transactional
     @GetMapping(value = "/reset")
     public Result<?> reset() {
         log.info("reset accountCashRepository: {}", accountCashRepository.updateAll(configData.getCashInit()));
@@ -74,6 +79,7 @@ public class GeneratorController {
      *
      * @return
      */
+    @Transactional
     @GetMapping(value = "/user")
     public Result<?> user() {
         accountCashRepository.deleteAll();
@@ -112,10 +118,10 @@ public class GeneratorController {
      * @return
      */
     @GetMapping(value = "/product")
-    public Result<?> product() {
-        productRepository.deleteAll();
+    public Result<?> product() throws InterruptedException {
+//        productRepository.deleteAll();
 
-        long i = 0;
+        long i = 477300;
         ArrayList<Product> products = new ArrayList<>(100);
 
         while (i++ < configData.getProductMax()) {
@@ -123,8 +129,13 @@ public class GeneratorController {
 
             products.add(new Product(i, uuid.substring(16, 24), configData.getProductStockMax()));
             if (products.size() == 100) {
-                productRepository.saveAll(products);
+                generatorService.saveProducts(products);
+
                 products.clear();
+
+                log.info("save index: {}%", ((double)i) / 10000);
+
+                Thread.sleep(100);
             }
         }
 

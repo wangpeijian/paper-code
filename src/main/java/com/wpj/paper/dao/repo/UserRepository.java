@@ -7,11 +7,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Set;
 
 public interface UserRepository extends JpaRepository<User, Long> {
-
-    @Query(value = "SELECT * FROM `user` WHERE name = :name", nativeQuery = true)
-    List<User> findByName(@Param("name") String name);
 
     @Modifying
     @Query(value = "insert into `user` values (:id, :name)", nativeQuery = true)
@@ -19,4 +17,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query(value = "select * from `user` where id = :uid for update", nativeQuery = true)
     User forUpdateLock(long uid);
+
+    @Query(value = "select * from `user` where id in (:uids) for update", nativeQuery = true)
+    List<User> forUpdateLock(Set<Long> uids);
 }

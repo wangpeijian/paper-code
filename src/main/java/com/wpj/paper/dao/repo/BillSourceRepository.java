@@ -7,7 +7,11 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface BillSourceRepository extends JpaRepository<BillSource, Long> {
 
-    @Modifying
-    @Query(value = "UPDATE bill_source SET status_code = 0", nativeQuery = true)
-    int updateAll();
+    @Modifying()
+    @Query(value = "insert  into bill_source(id, user_id, amount, bill_id, status_code) values (:#{#billSource.id}, :#{#billSource.userId}, :#{#billSource.amount}, :#{#billSource.billId}, :#{#billSource.statusCode})", nativeQuery = true)
+    int insert(BillSource billSource);
+
+    @Modifying()
+    @Query(value = "update bill_source set status_code = :#{#billSource.statusCode}  where id = :#{#billSource.id}", nativeQuery = true)
+    int  updateStatusCode(BillSource billSource);
 }

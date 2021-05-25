@@ -22,7 +22,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 @Slf4j
 @RestController
@@ -69,35 +71,42 @@ public class RunController {
     PlanService noLockPlanService;
 
 
+    @GetMapping(value = "/preheat")
+    public Result<?> preheat() {
+        int type = 4;
+        if (new Random().nextInt(2) == 1) {
+            type = 5;
+        }
+        BaseBizService service = getService("ru");
+
+        return Result.ok(doService(service, type, dbPlanService));
+    }
+
     @GetMapping(value = "/p1/{isolation}")
     public Result<?> p1(@PathVariable("isolation") String isolation) {
         int type = ActionFactor.getAction();
-        long userId = Disperser.get(configData.getUserMax());
 
         BaseBizService service = getService(isolation);
 
-        return Result.ok(doService(service, type, userId, dbPlanService));
+        return Result.ok(doService(service, type, dbPlanService));
     }
 
     @GetMapping(value = "/p2/{isolation}")
     public Result<?> p2(@PathVariable("isolation") String isolation) {
         int type = ActionFactor.getAction();
-        long userId = Disperser.get(configData.getUserMax());
 
         BaseBizService service = getService(isolation);
 
-        return Result.ok(doService(service, type, userId, redisPlanService));
+        return Result.ok(doService(service, type, redisPlanService));
     }
 
     @GetMapping(value = "/p3/{isolation}")
     public DeferredResult<Result<?>> p3(@PathVariable("isolation") String isolation) {
         int type = ActionFactor.getAction();
-        long userId = Disperser.get(configData.getUserMax());
 
         BaseBizService service = getService(isolation);
 
-
-        return (DeferredResult<Result<?>>) doService(service, type, userId, noLockPlanService);
+        return (DeferredResult<Result<?>>) doService(service, type, noLockPlanService);
     }
 
     private BaseBizService getService(String isolation) {
@@ -115,52 +124,40 @@ public class RunController {
         return null;
     }
 
-    private Object doService(BaseBizService service, int type, long userId, PlanService<?> planService) {
+    private Object doService(BaseBizService service, int type, PlanService<?> planService) {
 
-        long price = new Random().nextInt((int) configData.getCashInit() / 10);
+        log.info("doService type: {}", type);
 
-        long id;
+        long userId;
 
         switch (type) {
             case 1:
-                // 随机生成一条记录
-                long serviceId = Disperser.get(configData.getProductMax());
-                long num = new Random().nextInt((int) configData.getProductStockMax() / 100);
-
-                id = Long.parseLong(snowflake.nextId());
-
-                OrderSource source = new OrderSource(id, userId, id, serviceId, price, num);
-                source = orderSourceRepository.save(source);
-
+                userId = Disperser.get(configData.getUserMax());
                 // 执行实际业务
-                return service.packageBill(source, planService);
+                return service.packageBill(userId, planService);
             case 2:
-                id = Long.parseLong(snowflake.nextId());
-
-                // 随机生成一条记录
-                BillSource billSource = new BillSource(id, userId, price, id);
-                billSource = billSourceRepository.save(billSource);
-
+                userId = Disperser.get(configData.getUserMax());
                 // 执行实际业务
-                return service.usageBill(billSource, planService);
+                return service.usageBill(userId, planService);
             case 3:
                 // 执行随机查询业务
                 return service.searchOrder();
             case 4:
-                id = Long.parseLong(snowflake.nextId());
 
-                // 随机生成一条记录
-                RechargeSource rechargeSource = new RechargeSource(id, userId, price, id);
-                rechargeSource = rechargeSourceRepository.save(rechargeSource);
+                int max = new Random().nextInt(100) + 1;
+                Set<Long> ids = new HashSet<>();
+                while (ids.size() < max) {
+                    ids.add(Disperser.get(configData.getUserMax()));
+                }
 
                 // 执行实际业务
-                return service.recharge(rechargeSource, planService);
+                return service.recharge(ids, planService);
             case 5:
                 // 执行随机查询业务
                 return service.searchStock();
         }
 
-        return "error" ;
+        return "error";
     }
 
 

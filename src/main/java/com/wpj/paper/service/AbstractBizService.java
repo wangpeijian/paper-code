@@ -1,16 +1,19 @@
 package com.wpj.paper.service;
 
+import com.wpj.paper.config.ConfigData;
 import com.wpj.paper.dao.entity.*;
 import com.wpj.paper.dao.repo.*;
 import com.wpj.paper.service.model.ConsumeResult;
 import com.wpj.paper.service.model.RechargeResult;
+import com.wpj.paper.util.Disperser;
 import com.wpj.paper.util.Snowflake;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 public abstract class AbstractBizService implements BaseBizService {
@@ -37,35 +40,44 @@ public abstract class AbstractBizService implements BaseBizService {
     TradeRepository tradeRepository;
 
     @Autowired
+    UserRepository userRepository;
+
+    @Autowired
     Snowflake snowflake;
 
+    @Autowired
+    ConfigData configData;
 
-    /**
-     * 支付按量付费账单
-     *
-     * @param billSource
-     * @return
-     */
-    public long doUsageBill(BillSource billSource) {
-        AccountCash accountCash = accountCashRepository.getOne(billSource.getUserId());
-        AccountCredit accountCredit = accountCreditRepository.getOne(billSource.getUserId());
+    public BillSource createBillSource(long userId) {
+        long id = Long.parseLong(snowflake.nextId());
+        long price = new Random().nextInt((int) configData.getCashInit() / 10);
 
-        // 扣减账单
-        ConsumeResult consumeResult = consume(accountCash.getCash(), accountCredit.getCredit(), billSource.getAmount());
+        // 随机生成一条记录
+        BillSource billSource = new BillSource(id, userId, price, id);
+        billSourceRepository.insert(billSource);
+        return billSource;
+    }
 
-        // 创建流水记录
-        Trade trade = createTrade(2, billSource.getBillId(), billSource.getUserId(), consumeResult);
-        tradeRepository.save(trade);
+    public RechargeSource createRechargeSource(long userId) {
+        long id = Long.parseLong(snowflake.nextId());
+        long price = new Random().nextInt((int) configData.getCashInit() / 10);
 
-        // 更新账户金额
-        accountCashRepository.save(new AccountCash(billSource.getUserId(), consumeResult.getCash()));
-        accountCreditRepository.save(new AccountCredit(billSource.getUserId(), accountCredit.getCredit(), accountCredit.getCreditMax()));
+        // 随机生成一条记录
+        RechargeSource rechargeSource = new RechargeSource(id, userId, price, id);
+        rechargeSourceRepository.insert(rechargeSource);
+        return rechargeSource;
+    }
 
-        //更新bill source
-        billSource.setStatusCode(1L);
-        billSourceRepository.save(billSource);
+    public OrderSource createOrderSource(long userId) {
+        long id = Long.parseLong(snowflake.nextId());
+        long price = new Random().nextInt((int) configData.getCashInit() / 10);
+        long serviceId = Disperser.get(configData.getProductMax());
+        long num = new Random().nextInt((int) configData.getProductStockMax() / 100);
 
-        return 1;
+        // 随机生成一条记录
+        OrderSource source = new OrderSource(id, userId, id, serviceId, price, num);
+        orderSourceRepository.insert(source);
+        return source;
     }
 
     /**
@@ -73,8 +85,9 @@ public abstract class AbstractBizService implements BaseBizService {
      *
      * @return
      */
-    public long doPackageBill(OrderSource orderSource) {
-        long userId = orderSource.getUserId();
+    public long doPackageBill(long userId) {
+        OrderSource orderSource = createOrderSource(userId);
+
         long errorCode = 1;
 
         AccountCash accountCash = accountCashRepository.getOne(userId);
@@ -96,7 +109,7 @@ public abstract class AbstractBizService implements BaseBizService {
 
         // 创建流水记录
         Trade trade = createTrade(1, orderSource.getOrderId(), userId, consumeResult);
-        tradeRepository.save(trade);
+        tradeRepository.insert(trade);
 
         // 更新账户金额
         accountCashRepository.save(new AccountCash(userId, consumeResult.getCash()));
@@ -104,45 +117,70 @@ public abstract class AbstractBizService implements BaseBizService {
 
         //更新order source
         orderSource.setStatusCode(errorCode);
-        orderSourceRepository.save(orderSource);
+        orderSourceRepository.updateStatusCode(orderSource);
 
         return errorCode;
     }
 
     /**
-     * 账户充值
+     * 支付按量付费账单
      *
+     * @param userId
      * @return
      */
-    public long doRecharge(RechargeSource rechargeSource) {
-        long userId = rechargeSource.getUserId();
+    public long doUsageBill(long userId) {
+        BillSource billSource = createBillSource(userId);
+
+        AccountCash accountCash = accountCashRepository.getOne(billSource.getUserId());
+        AccountCredit accountCredit = accountCreditRepository.getOne(billSource.getUserId());
+
+        // 扣减账单
+        ConsumeResult consumeResult = consume(accountCash.getCash(), accountCredit.getCredit(), billSource.getAmount());
+
+        // 创建流水记录
+        Trade trade = createTrade(2, billSource.getBillId(), billSource.getUserId(), consumeResult);
+        tradeRepository.insert(trade);
+
+        // 更新账户金额
+        accountCashRepository.save(new AccountCash(billSource.getUserId(), consumeResult.getCash()));
+        accountCreditRepository.save(new AccountCredit(billSource.getUserId(), accountCredit.getCredit(), accountCredit.getCreditMax()));
+
+        //更新bill source
+        billSource.setStatusCode(1L);
+        billSourceRepository.updateStatusCode(billSource);
+
+        return 1;
+    }
+
+    public void doRecharge(long userId) {
+        RechargeSource rechargeSource = createRechargeSource(userId);
         long balance = rechargeSource.getAmount();
 
-        List<Trade> debtTrades;
+//        List<Trade> debtTrades = new ArrayList<>();
 
         // 查询欠款流水
-        for (; ; ) {
-            if (balance == 0) {
-                break;
-            }
-
-            debtTrades = tradeRepository.findDebt(userId);
-
-            if (CollectionUtils.isEmpty(debtTrades)) {
-                break;
-            }
-
-            // 欠费流水销账
-            for (Trade trade : debtTrades) {
-                RechargeResult rechargeResult = clearDebt(balance, trade.getDebt());
-                balance = rechargeResult.getCash();
-                tradeRepository.clearDebt(trade.getId(), trade.getDebt() - rechargeResult.getDebt(), rechargeResult.getDebt());
-
-                if (balance == 0) {
-                    break;
-                }
-            }
-        }
+//        for (; ; ) {
+//            if (balance == 0) {
+//                break;
+//            }
+//
+//            debtTrades = tradeRepository.findDebt(userId);
+//
+//            if (CollectionUtils.isEmpty(debtTrades)) {
+//                break;
+//            }
+//
+//            // 欠费流水销账
+//            for (Trade trade : debtTrades) {
+//                RechargeResult rechargeResult = clearDebt(balance, trade.getDebt());
+//                balance = rechargeResult.getCash();
+//                tradeRepository.clearDebt(trade.getId(), trade.getDebt() - rechargeResult.getDebt(), rechargeResult.getDebt());
+//
+//                if (balance == 0) {
+//                    break;
+//                }
+//            }
+//        }
 
         // 补充信用额度
         // 现金账户充值
@@ -152,15 +190,23 @@ public abstract class AbstractBizService implements BaseBizService {
 
         // 创建流水记录
         Trade trade = createTrade(4, rechargeSource.getRechargeId(), userId, rechargeResult);
-        tradeRepository.save(trade);
+        tradeRepository.insert(trade);
 
         //更新recharge source
         rechargeSource.setStatusCode(1L);
-        rechargeSourceRepository.save(rechargeSource);
-
-        return 1;
+        rechargeSourceRepository.updateStatusCode(rechargeSource);
     }
 
+    /**
+     * 账户充值
+     *
+     * @param userIds
+     * @return
+     */
+    public long doRecharge(Set<Long> userIds) {
+        userIds.forEach(this::doRecharge);
+        return 1L;
+    }
 
     /**
      * 尝试消费一笔金额
@@ -283,15 +329,82 @@ public abstract class AbstractBizService implements BaseBizService {
     }
 
 
-
     @Override
-    public List<OrderSource> searchOrder() {
+    public List<?> searchOrder() {
+        int pageSize = (new Random().nextInt(3) + 1) * 10;
+        int pageIndex = new Random().nextInt(100);
+
+        int type = new Random().nextInt(4);
+        long userId = new Random().nextInt((int) configData.getUserMax()) + 1;
+
+        switch (type) {
+            case 0:
+                OrderSource orderSource = new OrderSource();
+                Example<OrderSource> orderExample = Example.of(orderSource);
+
+                orderSource.setUserId(userId);
+                return orderSourceRepository.findAll(orderExample, PageRequest.of(pageIndex, pageSize)).getContent();
+            case 1:
+                Trade trade = new Trade();
+                Example<Trade> tradeExample = Example.of(trade);
+
+                trade.setUserId(userId);
+                return tradeRepository.findAll(tradeExample, PageRequest.of(pageIndex, pageSize)).getContent();
+            case 2:
+                BillSource billSource = new BillSource();
+                Example<BillSource> billSourceExample = Example.of(billSource);
+
+                billSource.setUserId(userId);
+                return billSourceRepository.findAll(billSourceExample, PageRequest.of(pageIndex, pageSize)).getContent();
+            case 3:
+                RechargeSource rechargeSource = new RechargeSource();
+                Example<RechargeSource> rechargeSourceExample = Example.of(rechargeSource);
+
+                rechargeSource.setUserId(userId);
+                return rechargeSourceRepository.findAll(rechargeSourceExample, PageRequest.of(pageIndex, pageSize)).getContent();
+        }
 
         return null;
     }
 
     @Override
-    public List<Product> searchStock() {
+    public List<?> searchStock() {
+        int pageSize = (new Random().nextInt(3) + 1) * 10;
+        int pageIndex = new Random().nextInt(100);
+
+        long userId = new Random().nextInt((int) configData.getUserMax()) + 1;
+
+
+        int type = new Random().nextInt(4);
+
+
+        switch (type) {
+            case 0:
+                Product product = new Product();
+                Example<Product> productExample = Example.of(product);
+
+                long serviceId = new Random().nextInt((int) configData.getProductMax()) + 1;
+                product.setId(serviceId);
+                return productRepository.findAll(productExample, PageRequest.of(pageIndex, pageSize)).getContent();
+            case 1:
+                User user = new User();
+                Example<User> userExample = Example.of(user);
+
+                user.setId(0L);
+                return userRepository.findAll(userExample, PageRequest.of(pageIndex, pageSize)).getContent();
+            case 2:
+                AccountCash accountCash = new AccountCash();
+                Example<AccountCash> accountCashExample = Example.of(accountCash);
+
+                accountCash.setId(userId);
+                return accountCashRepository.findAll(accountCashExample, PageRequest.of(pageIndex, pageSize)).getContent();
+            case 3:
+                AccountCredit accountCredit = new AccountCredit();
+                Example<AccountCredit> accountCreditExample = Example.of(accountCredit);
+
+                accountCredit.setId(userId);
+                return accountCreditRepository.findAll(accountCreditExample, PageRequest.of(pageIndex, pageSize)).getContent();
+        }
 
         return null;
     }

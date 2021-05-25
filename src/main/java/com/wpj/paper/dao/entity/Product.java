@@ -16,6 +16,6 @@ public class Product {
     @Id
     private Long id;
 
-    private String service_code;
+    private String serviceCode;
     private Long stock;
 }

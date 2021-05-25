@@ -1,29 +1,28 @@
 package com.wpj.paper.service.biz.my;
 
-import com.wpj.paper.dao.entity.BillSource;
-import com.wpj.paper.dao.entity.OrderSource;
-import com.wpj.paper.dao.entity.RechargeSource;
 import com.wpj.paper.service.AbstractBizService;
 import com.wpj.paper.service.plan.PlanService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Set;
+
 @Transactional(rollbackFor = Exception.class, isolation = Isolation.READ_UNCOMMITTED)
 @Service("MyRu")
 public class MyRuServiceImpl extends AbstractBizService {
    @Override
-    public Object usageBill(BillSource billSource, PlanService<?> planService) {
-        return planService.execute(() -> doUsageBill(billSource), billSource.getUserId());
+    public Object usageBill(long userId, PlanService<?> planService) {
+         return planService.execute(() -> doUsageBill(userId), userId, "MyRu");
     }
 
     @Override
-    public Object packageBill(OrderSource orderSource, PlanService<?> planService) {
-        return planService.execute(() -> doPackageBill(orderSource), orderSource.getUserId());
+    public Object packageBill(long userId, PlanService<?> planService) {
+       return planService.execute(() -> doPackageBill(userId), userId, "MyRu");
     }
 
     @Override
-    public Object recharge(RechargeSource rechargeSource, PlanService<?> planService) {
-        return planService.execute(() -> doRecharge(rechargeSource), rechargeSource.getUserId());
+    public Object recharge(Set<Long> userIds, PlanService<?> planService) {
+        return planService.execute(() -> doRecharge(userIds), userIds, "MyRu");
     }
 }
