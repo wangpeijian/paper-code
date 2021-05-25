@@ -144,7 +144,7 @@ public class RunController {
                 return service.searchOrder();
             case 4:
 
-                int max = new Random().nextInt(100) + 1;
+                int max = new Random().nextInt(10) + 1;
                 Set<Long> ids = new HashSet<>();
                 while (ids.size() < max) {
                     ids.add(Disperser.get(configData.getUserMax()));

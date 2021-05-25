@@ -4,6 +4,16 @@ server:
 spring:
     redis:
         host: localhost
+    redisson:
+        enable: true
+        singleServerConfig:
+            idleConnectionTimeout: 10000
+            pingTimeout: 1000
+            connectTimeout: 10000
+            timeout: 3000
+            retryAttempts: 3
+            retryInterval: 1500
+            address: redis://localhost:6379
 
 config:
     user-max: 3000
