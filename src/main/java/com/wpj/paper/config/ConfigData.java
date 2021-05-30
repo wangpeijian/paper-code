@@ -23,7 +23,12 @@ public class ConfigData {
     @Value("${config.product-stock-max}")
     private long productStockMax;
 
+    @Value("${config.product-zipf}")
+    private float productZipf;
+
     @Value("${config.pool-size}")
     private int poolSize;
 
+    @Value("${config.batch-size}")
+    private int batchSize;
 }

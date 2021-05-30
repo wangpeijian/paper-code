@@ -49,6 +49,9 @@ public class GeneratorController {
     TradeRepository tradeRepository;
 
     @Autowired
+    OrderItemRepository orderItemRepository;
+
+    @Autowired
     ConfigData configData;
 
     @Autowired
@@ -70,6 +73,7 @@ public class GeneratorController {
         orderSourceRepository.deleteAll();
         rechargeSourceRepository.deleteAll();
         tradeRepository.deleteAll();
+        orderItemRepository.deleteAll();
 
         return Result.ok();
     }
@@ -121,24 +125,24 @@ public class GeneratorController {
     public Result<?> product() throws InterruptedException {
 //        productRepository.deleteAll();
 
-        long i = 477300;
-        ArrayList<Product> products = new ArrayList<>(100);
-
-        while (i++ < configData.getProductMax()) {
-            String uuid = UUID.randomUUID().toString().replace("-", "");
-
-            products.add(new Product(i, uuid.substring(16, 24), configData.getProductStockMax()));
-            if (products.size() == 100) {
-                generatorService.saveProducts(products);
-
-                products.clear();
-
-                log.info("save index: {}%", ((double)i) / 10000);
-
-                Thread.sleep(100);
-            }
-        }
-
+//        long i = 477300;
+//        ArrayList<Product> products = new ArrayList<>(100);
+//
+//        while (i++ < configData.getProductMax()) {
+//            String uuid = UUID.randomUUID().toString().replace("-", "");
+//
+//            products.add(new Product(i, uuid.substring(16, 24), configData.getProductStockMax()));
+//            if (products.size() == 100) {
+//                generatorService.saveProducts(products);
+//
+//                products.clear();
+//
+//                log.info("save index: {}%", ((double)i) / 10000);
+//
+//                Thread.sleep(100);
+//            }
+//        }
+//
         return Result.ok();
     }
 

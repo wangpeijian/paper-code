@@ -7,8 +7,8 @@ import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -20,9 +20,8 @@ public class RedisPlanServiceImpl implements PlanService<Object> {
     @Autowired
     RedissonClient redissonClient;
 
-    @Override
-    public Object execute(Supplier<Long> supplier, long uid, String isolation) {
-        String lockName = String.format("user-lock-%s", uid);
+    private Object lock(String lockPrefix, long uid, Supplier<Long> supplier) {
+        String lockName = String.format("%s-lock-%s", lockPrefix, uid);
         RLock lock = redissonClient.getSpinLock(lockName);
 
         log.info("lockName: {}", lockName);
@@ -33,20 +32,21 @@ public class RedisPlanServiceImpl implements PlanService<Object> {
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
-        }finally {
+        } finally {
             lock.unlock();
         }
 
         throw new RuntimeException("获取锁超时 lockName: " + lockName);
     }
 
-    @Override
-    public Object execute(Supplier<Long> supplier, Set<Long> uids, String isolation) {
-        String lockNames = JSON.toJSONString(uids.stream().map(uid -> String.format("user-lock:-%s", uid)).collect(Collectors.toSet()));
+    private Object lock(String lockPrefix, Set<Long> ids, Supplier<Long> supplier) {
+        TreeSet<Long> tids = new TreeSet<>(ids);
 
-        RLock[] lockSet = uids.stream()
-                .map(uid -> redissonClient.getSpinLock(String.format("user-lock:-%s", uid)))
-                .collect(Collectors.toSet()).toArray(new RLock[uids.size()]);
+        String lockNames = JSON.toJSONString(tids.stream().map(uid -> String.format("%s-lock:-%s", lockPrefix, uid)).collect(Collectors.toSet()));
+
+        RLock[] lockSet = tids.stream()
+                .map(uid -> redissonClient.getSpinLock(String.format("%s-lock:-%s", lockPrefix, uid)))
+                .collect(Collectors.toSet()).toArray(new RLock[tids.size()]);
 
         RLock multiLock = redissonClient.getMultiLock(lockSet);
 
@@ -58,10 +58,30 @@ public class RedisPlanServiceImpl implements PlanService<Object> {
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
-        }finally {
+        } finally {
             multiLock.unlock();
         }
 
         throw new RuntimeException("获取锁超时 lockNames: " + lockNames);
+    }
+
+    @Override
+    public Object lockUser(long uid, Supplier<Long> supplier) {
+        return lock("uid", uid, supplier);
+    }
+
+    @Override
+    public Object lockUser(Set<Long> uids, Supplier<Long> supplier) {
+        return lock("uid", uids, supplier);
+    }
+
+    @Override
+    public Object lockProduct(long pid, Supplier<Long> supplier) {
+        return lock("pid", pid, supplier);
+    }
+
+    @Override
+    public Object lockProduct(Set<Long> pids, Supplier<Long> supplier) {
+        return lock("pid", pids, supplier);
     }
 }

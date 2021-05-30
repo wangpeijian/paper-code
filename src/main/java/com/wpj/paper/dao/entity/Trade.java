@@ -22,8 +22,6 @@ public class Trade {
     private Long credit;
     private Long debt;
     private Long sourceId;
-    private Long cashBalance;
-    private Long creditBalance;
     private Date createTime;
     private int type;
 }

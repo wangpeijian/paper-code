@@ -9,10 +9,10 @@ import org.springframework.data.repository.query.Param;
 public interface OrderSourceRepository extends JpaRepository<OrderSource, Long> {
 
     @Modifying()
-    @Query(value = "insert into order_source(id, num, order_id, price, service_id, status_code, user_id) values(:#{#orderSource.id}, :#{#orderSource.num}, :#{#orderSource.orderId}, :#{#orderSource.price}, :#{#orderSource.serviceId}, :#{#orderSource.statusCode}, :#{#orderSource.userId})", nativeQuery = true)
+    @Query(value = "insert into order_source(id, order_id, price, status_code, user_id) values(:#{#orderSource.id}, :#{#orderSource.orderId}, :#{#orderSource.price}, :#{#orderSource.statusCode}, :#{#orderSource.userId})", nativeQuery = true)
     int insert(OrderSource orderSource);
 
     @Modifying()
-    @Query(value = "update order_source set status_code = :#{#orderSource.statusCode}  where id = :#{#orderSource.id}", nativeQuery = true)
-    int updateStatusCode(OrderSource orderSource);
+    @Query(value = "update order_source set status_code = :#{#orderSource.statusCode}, price = :#{#orderSource.price}  where id = :#{#orderSource.id}", nativeQuery = true)
+    int updateStatusCodeAndPrice(OrderSource orderSource);
 }

@@ -5,7 +5,11 @@ import java.util.function.Supplier;
 
 public interface PlanService<T> {
 
-    T execute(Supplier<Long> supplier, long uid, String isolation);
+    T lockUser(long uid, Supplier<Long> supplier);
 
-    T execute(Supplier<Long> supplier, Set<Long> uid,  String isolation);
+    T lockUser(Set<Long> uids, Supplier<Long> supplier);
+
+    T lockProduct(long pid, Supplier<Long> supplier);
+
+    T lockProduct(Set<Long> pids, Supplier<Long> supplier);
 }

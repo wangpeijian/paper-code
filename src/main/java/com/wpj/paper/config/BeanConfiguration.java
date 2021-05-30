@@ -1,7 +1,9 @@
 package com.wpj.paper.config;
 
 import com.wpj.paper.util.Snowflake;
+import com.wpj.paper.util.ZipfGenerator;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,6 +14,9 @@ import java.util.Random;
 @Slf4j
 @Configuration
 public class BeanConfiguration {
+
+    @Autowired
+    ConfigData configData;
 
     @Bean
     public Snowflake snowflake() {
@@ -28,5 +33,15 @@ public class BeanConfiguration {
         // 使用ip初始化失败,改为使用随机数方案初始化id生成器,随机数方式主机id为0
         log.info("使用ip初始化失败,改为使用随机数方案初始化id生成器");
         return new Snowflake(new Random().nextInt(128), 0);
+    }
+
+    @Bean
+    public ZipfGenerator userZipf(){
+       return new ZipfGenerator((int) configData.getUserMax(), 0.9);
+    }
+
+    @Bean
+    public ZipfGenerator productZipf(){
+        return new ZipfGenerator((int) configData.getProductMax(), configData.getProductZipf());
     }
 }

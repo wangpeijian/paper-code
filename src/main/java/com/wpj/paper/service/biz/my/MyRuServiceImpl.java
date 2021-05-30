@@ -11,18 +11,23 @@ import java.util.Set;
 @Transactional(rollbackFor = Exception.class, isolation = Isolation.READ_UNCOMMITTED)
 @Service("MyRu")
 public class MyRuServiceImpl extends AbstractBizService {
-   @Override
+    @Override
     public Object usageBill(long userId, PlanService<?> planService) {
-         return planService.execute(() -> doUsageBill(userId), userId, "MyRu");
+        return doUsageBill(userId, planService);
     }
 
     @Override
     public Object packageBill(long userId, PlanService<?> planService) {
-       return planService.execute(() -> doPackageBill(userId), userId, "MyRu");
+        return doPackageBill(userId, planService);
     }
 
     @Override
     public Object recharge(Set<Long> userIds, PlanService<?> planService) {
-        return planService.execute(() -> doRecharge(userIds), userIds, "MyRu");
+        return doRecharge(userIds, planService);
+    }
+
+    @Override
+    public Object reload(Set<Long> pIds, PlanService<?> planService) {
+        return doReload(pIds, planService);
     }
 }

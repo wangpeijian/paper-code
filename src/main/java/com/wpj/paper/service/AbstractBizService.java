@@ -5,14 +5,16 @@ import com.wpj.paper.dao.entity.*;
 import com.wpj.paper.dao.repo.*;
 import com.wpj.paper.service.model.ConsumeResult;
 import com.wpj.paper.service.model.RechargeResult;
+import com.wpj.paper.service.plan.PlanService;
 import com.wpj.paper.util.Disperser;
 import com.wpj.paper.util.Snowflake;
+import com.wpj.paper.util.ZipfGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 @Service
@@ -43,14 +45,23 @@ public abstract class AbstractBizService implements BaseBizService {
     UserRepository userRepository;
 
     @Autowired
+    OrderItemRepository orderItemRepository;
+
+    @Autowired
     Snowflake snowflake;
 
     @Autowired
     ConfigData configData;
 
+    @Autowired
+    ZipfGenerator userZipf;
+
+    @Autowired
+    ZipfGenerator productZipf;
+
     public BillSource createBillSource(long userId) {
         long id = Long.parseLong(snowflake.nextId());
-        long price = new Random().nextInt((int) configData.getCashInit() / 10);
+        long price = new Random().nextInt((int) configData.getCashInit() / 100);
 
         // 随机生成一条记录
         BillSource billSource = new BillSource(id, userId, price, id);
@@ -60,7 +71,7 @@ public abstract class AbstractBizService implements BaseBizService {
 
     public RechargeSource createRechargeSource(long userId) {
         long id = Long.parseLong(snowflake.nextId());
-        long price = new Random().nextInt((int) configData.getCashInit() / 10);
+        long price = new Random().nextInt((int) configData.getCashInit());
 
         // 随机生成一条记录
         RechargeSource rechargeSource = new RechargeSource(id, userId, price, id);
@@ -70,14 +81,41 @@ public abstract class AbstractBizService implements BaseBizService {
 
     public OrderSource createOrderSource(long userId) {
         long id = Long.parseLong(snowflake.nextId());
-        long price = new Random().nextInt((int) configData.getCashInit() / 10);
-        long serviceId = Disperser.get(configData.getProductMax());
-        long num = new Random().nextInt((int) configData.getProductStockMax() / 100);
 
         // 随机生成一条记录
-        OrderSource source = new OrderSource(id, userId, id, serviceId, price, num);
+        OrderSource source = new OrderSource(id, userId, id, 0L);
         orderSourceRepository.insert(source);
         return source;
+    }
+
+    /**
+     * 创建订单详情表
+     *
+     * @param orderSource
+     * @param products
+     * @return
+     */
+    public List<OrderItem> createOrderItems(OrderSource orderSource, HashMap<Long, Integer> products) {
+        List<OrderItem> orderItems = new ArrayList<>();
+
+        products.forEach((key, value) -> {
+            long id = Long.parseLong(snowflake.nextId());
+            long pid = key;
+            int num = value;
+            Product product = productRepository.getOne(pid);
+            int success = productRepository.deductStock(pid, (long) num);
+
+            if (success == 1) {
+                BigDecimal discount = product.getDiscount();
+                long price = new BigDecimal(product.getOriginalPrice().toString()).multiply(discount).multiply(BigDecimal.valueOf(num)).longValue();
+                OrderItem orderItem = new OrderItem(id, orderSource.getOrderId(), pid, num, price, discount);
+                orderItems.add(orderItem);
+            }
+
+        });
+
+        orderItemRepository.saveAll(orderItems);
+        return orderItems;
     }
 
     /**
@@ -85,102 +123,96 @@ public abstract class AbstractBizService implements BaseBizService {
      *
      * @return
      */
-    public long doPackageBill(long userId) {
-        OrderSource orderSource = createOrderSource(userId);
+    public Object doPackageBill(long userId, PlanService<?> planService) {
 
-        long errorCode = 1;
+        return planService.lockUser(userId, () -> {
 
-        AccountCash accountCash = accountCashRepository.getOne(userId);
-        AccountCredit accountCredit = accountCreditRepository.getOne(userId);
+            HashMap<Long, Integer> products = new HashMap<>();
 
-        // 扣减账单
-        ConsumeResult consumeResult = consume(accountCash.getCash(), accountCredit.getCredit(), orderSource.getPrice());
+            for (int i = 0; i < new Random().nextInt(10) + 1; i++) {
+                Long pid = (long) productZipf.next();
+                Integer num = Optional.ofNullable(products.get(pid)).orElse(0);
+                products.put(pid, ++num);
+            }
 
-        // 余额不足直接返回
-        if (consumeResult.hasDebt()) {
-            errorCode = -1;
-        }
+            planService.lockProduct(products.keySet(), () -> {
+                OrderSource orderSource = createOrderSource(userId);
+                List<OrderItem> orderItems = createOrderItems(orderSource, products);
 
-        // 余额足够,尝试扣减库存
-        int deductStockSuccess = productRepository.deductStock(orderSource.getServiceId(), orderSource.getNum());
-        if (deductStockSuccess != 1) {
-            errorCode = -2;
-        }
+                // 余额足够,尝试扣减库存
+                if (orderItems.size() == 0) {
+                    throw new RuntimeException("库存不足");
+                }
 
-        // 创建流水记录
-        Trade trade = createTrade(1, orderSource.getOrderId(), userId, consumeResult);
-        tradeRepository.insert(trade);
+                //更新order source
+                long price = orderItems.stream().mapToLong(OrderItem::getPrice).sum();
+                orderSource.setPrice(price);
+                orderSource.setStatusCode(1L);
+                orderSourceRepository.updateStatusCodeAndPrice(orderSource);
 
-        // 更新账户金额
-        accountCashRepository.save(new AccountCash(userId, consumeResult.getCash()));
-        accountCreditRepository.save(new AccountCredit(userId, accountCredit.getCredit(), accountCredit.getCreditMax()));
+                AccountCash accountCash = accountCashRepository.getOne(userId);
+                AccountCredit accountCredit = accountCreditRepository.getOne(userId);
 
-        //更新order source
-        orderSource.setStatusCode(errorCode);
-        orderSourceRepository.updateStatusCode(orderSource);
+                // 扣减账单
+                ConsumeResult consumeResult = consume(accountCash.getCash(), accountCredit.getCredit(), orderSource.getPrice());
 
-        return errorCode;
+                // 余额不足直接返回
+                if (consumeResult.hasDebt()) {
+                    throw new RuntimeException("余额不足");
+                }
+
+                // 创建流水记录
+                Trade trade = createTrade(1, orderSource.getOrderId(), userId, consumeResult);
+                tradeRepository.insert(trade);
+
+                // 更新账户金额
+                accountCashRepository.save(new AccountCash(userId, consumeResult.getCash()));
+                accountCreditRepository.save(new AccountCredit(userId, accountCredit.getCredit(), accountCredit.getCreditMax()));
+
+                return 1L;
+            });
+
+            return 1L;
+        });
     }
 
     /**
      * 支付按量付费账单
      *
      * @param userId
+     * @param planService
      * @return
      */
-    public long doUsageBill(long userId) {
-        BillSource billSource = createBillSource(userId);
+    public Object doUsageBill(long userId, PlanService<?> planService) {
+        return planService.lockUser(userId, () -> {
+            BillSource billSource = createBillSource(userId);
 
-        AccountCash accountCash = accountCashRepository.getOne(billSource.getUserId());
-        AccountCredit accountCredit = accountCreditRepository.getOne(billSource.getUserId());
+            AccountCash accountCash = accountCashRepository.getOne(billSource.getUserId());
+            AccountCredit accountCredit = accountCreditRepository.getOne(billSource.getUserId());
 
-        // 扣减账单
-        ConsumeResult consumeResult = consume(accountCash.getCash(), accountCredit.getCredit(), billSource.getAmount());
+            // 扣减账单
+            ConsumeResult consumeResult = consume(accountCash.getCash(), accountCredit.getCredit(), billSource.getAmount());
 
-        // 创建流水记录
-        Trade trade = createTrade(2, billSource.getBillId(), billSource.getUserId(), consumeResult);
-        tradeRepository.insert(trade);
+            // 创建流水记录
+            Trade trade = createTrade(2, billSource.getBillId(), billSource.getUserId(), consumeResult);
+            tradeRepository.insert(trade);
 
-        // 更新账户金额
-        accountCashRepository.save(new AccountCash(billSource.getUserId(), consumeResult.getCash()));
-        accountCreditRepository.save(new AccountCredit(billSource.getUserId(), accountCredit.getCredit(), accountCredit.getCreditMax()));
+            // 更新账户金额
+            accountCashRepository.save(new AccountCash(billSource.getUserId(), consumeResult.getCash()));
+            accountCreditRepository.save(new AccountCredit(billSource.getUserId(), accountCredit.getCredit(), accountCredit.getCreditMax()));
 
-        //更新bill source
-        billSource.setStatusCode(1L);
-        billSourceRepository.updateStatusCode(billSource);
+            //更新bill source
+            billSource.setStatusCode(1L);
+            billSourceRepository.updateStatusCode(billSource);
 
-        return 1;
+            return 1L;
+        });
+
     }
 
     public void doRecharge(long userId) {
         RechargeSource rechargeSource = createRechargeSource(userId);
         long balance = rechargeSource.getAmount();
-
-//        List<Trade> debtTrades = new ArrayList<>();
-
-        // 查询欠款流水
-//        for (; ; ) {
-//            if (balance == 0) {
-//                break;
-//            }
-//
-//            debtTrades = tradeRepository.findDebt(userId);
-//
-//            if (CollectionUtils.isEmpty(debtTrades)) {
-//                break;
-//            }
-//
-//            // 欠费流水销账
-//            for (Trade trade : debtTrades) {
-//                RechargeResult rechargeResult = clearDebt(balance, trade.getDebt());
-//                balance = rechargeResult.getCash();
-//                tradeRepository.clearDebt(trade.getId(), trade.getDebt() - rechargeResult.getDebt(), rechargeResult.getDebt());
-//
-//                if (balance == 0) {
-//                    break;
-//                }
-//            }
-//        }
 
         // 补充信用额度
         // 现金账户充值
@@ -201,11 +233,34 @@ public abstract class AbstractBizService implements BaseBizService {
      * 账户充值
      *
      * @param userIds
+     * @param planService
      * @return
      */
-    public long doRecharge(Set<Long> userIds) {
-        userIds.forEach(this::doRecharge);
-        return 1L;
+    public Object doRecharge(Set<Long> userIds, PlanService<?> planService) {
+        return planService.lockUser(userIds, () -> {
+            userIds.forEach(this::doRecharge);
+            return 1L;
+        });
+    }
+
+    public void doReload(long pId) {
+        Product product = productRepository.getOne(pId);
+        long reload = configData.getProductStockMax() - product.getStock();
+        productRepository.reload(pId, reload);
+    }
+
+    /**
+     * 商品库存补货
+     *
+     * @param pIds
+     * @param planService
+     * @return
+     */
+    public Object doReload(Set<Long> pIds, PlanService<?> planService) {
+        return planService.lockProduct(pIds, () -> {
+            pIds.forEach(this::doReload);
+            return 1L;
+        });
     }
 
     /**
@@ -246,25 +301,6 @@ public abstract class AbstractBizService implements BaseBizService {
         }
 
         return new ConsumeResult(cashConsume, creditConsume, cash, credit, bill);
-    }
-
-    /**
-     * 清除欠费金额
-     *
-     * @param balance
-     * @param debt
-     * @return
-     */
-    private RechargeResult clearDebt(long balance, long debt) {
-        if (balance >= debt) {
-            balance -= debt;
-            debt = 0;
-        } else {
-            debt -= balance;
-            balance = 0;
-        }
-
-        return new RechargeResult(balance, debt);
     }
 
     /**
@@ -318,10 +354,8 @@ public abstract class AbstractBizService implements BaseBizService {
         trade.setUserId(userId);
 
         trade.setCash(consumeResult.getCashConsume());
-        trade.setCashBalance(consumeResult.getCash());
 
         trade.setCredit(consumeResult.getCreditConsume());
-        trade.setCreditBalance(consumeResult.getCredit());
 
         trade.setDebt(consumeResult.getDebt());
 

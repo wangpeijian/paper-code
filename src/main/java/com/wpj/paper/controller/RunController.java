@@ -6,12 +6,14 @@ import com.wpj.paper.dao.entity.OrderSource;
 import com.wpj.paper.dao.entity.RechargeSource;
 import com.wpj.paper.dao.repo.BillSourceRepository;
 import com.wpj.paper.dao.repo.OrderSourceRepository;
+import com.wpj.paper.dao.repo.ProductRepository;
 import com.wpj.paper.dao.repo.RechargeSourceRepository;
 import com.wpj.paper.service.BaseBizService;
 import com.wpj.paper.service.plan.PlanService;
 import com.wpj.paper.util.ActionFactor;
 import com.wpj.paper.util.Disperser;
 import com.wpj.paper.util.Snowflake;
+import com.wpj.paper.util.ZipfGenerator;
 import com.wpj.paper.vo.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +43,9 @@ public class RunController {
     RechargeSourceRepository rechargeSourceRepository;
 
     @Autowired
+    ProductRepository productRepository;
+
+    @Autowired
     BaseBizService ssi;
 
     @Autowired
@@ -66,47 +71,46 @@ public class RunController {
     @Autowired
     PlanService redisPlanService;
 
-    @Qualifier("noLockPlan")
+    @Qualifier("javaLockPlan")
     @Autowired
-    PlanService noLockPlanService;
+    PlanService javaLockPlanService;
+
+    @Autowired
+    ZipfGenerator userZipf;
 
 
     @GetMapping(value = "/preheat")
     public Result<?> preheat() {
-        int type = 4;
+        int type = 3;
         if (new Random().nextInt(2) == 1) {
-            type = 5;
+            type = 6;
         }
         BaseBizService service = getService("ru");
 
         return Result.ok(doService(service, type, dbPlanService));
     }
 
-    @GetMapping(value = "/p1/{isolation}")
-    public Result<?> p1(@PathVariable("isolation") String isolation) {
-        int type = ActionFactor.getAction();
+    @GetMapping(value = "/{pType}/{isolation}")
+    public Result<?> execute(@PathVariable("pType") String pType, @PathVariable("isolation") String isolation) {
+        Integer type = ActionFactor.getAction();
 
         BaseBizService service = getService(isolation);
 
-        return Result.ok(doService(service, type, dbPlanService));
+        PlanService<?> planService = getPlanService(pType);
+
+        return Result.ok(type.toString(), doService(service, type, planService));
     }
 
-    @GetMapping(value = "/p2/{isolation}")
-    public Result<?> p2(@PathVariable("isolation") String isolation) {
-        int type = ActionFactor.getAction();
-
-        BaseBizService service = getService(isolation);
-
-        return Result.ok(doService(service, type, redisPlanService));
-    }
-
-    @GetMapping(value = "/p3/{isolation}")
-    public DeferredResult<Result<?>> p3(@PathVariable("isolation") String isolation) {
-        int type = ActionFactor.getAction();
-
-        BaseBizService service = getService(isolation);
-
-        return (DeferredResult<Result<?>>) doService(service, type, noLockPlanService);
+    private PlanService<?> getPlanService(String pType) {
+        switch (pType) {
+            case "p1":
+                return dbPlanService;
+            case "p2":
+                return redisPlanService;
+            case "p3":
+                return javaLockPlanService;
+        }
+        return null;
     }
 
     private BaseBizService getService(String isolation) {
@@ -126,39 +130,39 @@ public class RunController {
 
     private Object doService(BaseBizService service, int type, PlanService<?> planService) {
 
-        log.info("doService type: {}", type);
-
         long userId;
 
         switch (type) {
             case 1:
-                userId = Disperser.get(configData.getUserMax());
+                userId = userZipf.next();
                 // 执行实际业务
                 return service.packageBill(userId, planService);
             case 2:
-                userId = Disperser.get(configData.getUserMax());
+                userId = userZipf.next();
                 // 执行实际业务
                 return service.usageBill(userId, planService);
             case 3:
                 // 执行随机查询业务
                 return service.searchOrder();
             case 4:
-
-                int max = new Random().nextInt(10) + 1;
-                Set<Long> ids = new HashSet<>();
-                while (ids.size() < max) {
-                    ids.add(Disperser.get(configData.getUserMax()));
+                Set<Long> uIds = new HashSet<>();
+                while (uIds.size() < configData.getBatchSize()) {
+                    uIds.add((long) userZipf.next());
                 }
 
-                // 执行实际业务
-                return service.recharge(ids, planService);
+                // 执行实际业务-账户充值
+                return service.recharge(uIds, planService);
             case 5:
+                Set<Long> pIds = productRepository.findInsufficient();
+
+                // 执行实际业务-商品补货
+                return service.reload(pIds, planService);
+            case 6:
                 // 执行随机查询业务
                 return service.searchStock();
         }
 
         return "error";
     }
-
 
 }

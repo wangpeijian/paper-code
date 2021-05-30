@@ -8,22 +8,22 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
 
-@Transactional(rollbackFor = Exception.class, isolation = Isolation.REPEATABLE_READ)
-@Service("MsRr")
-public class MsRrServiceImpl extends AbstractBizService {
-    @Override
-    public Object usageBill(long userId, PlanService<?> planService) {
-        return planService.execute(() -> doUsageBill(userId), userId, "MsRr");
-    }
-
-    @Override
-    public Object packageBill(long userId, PlanService<?> planService) {
-        return planService.execute(() -> doPackageBill(userId), userId, "MsRr");
-    }
-
-    @Override
-    public Object recharge(Set<Long> userIds, PlanService<?> planService) {
-        return planService.execute(() -> doRecharge(userIds), userIds, "MsRr");
-    }
-
-}
+//@Transactional(rollbackFor = Exception.class, isolation = Isolation.REPEATABLE_READ)
+//@Service("MsRr")
+//public class MsRrServiceImpl extends AbstractBizService {
+//    @Override
+//    public Object usageBill(long userId, PlanService<?> planService) {
+//        return planService.execute(() -> doUsageBill(userId), userId, "MsRr");
+//    }
+//
+//    @Override
+//    public Object packageBill(long userId, PlanService<?> planService) {
+//        return planService.execute(() -> doPackageBill(userId), userId, "MsRr");
+//    }
+//
+//    @Override
+//    public Object recharge(Set<Long> userIds, PlanService<?> planService) {
+//        return planService.execute(() -> doRecharge(userIds), userIds, "MsRr");
+//    }
+//
+//}

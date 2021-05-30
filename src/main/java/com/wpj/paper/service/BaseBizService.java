@@ -16,4 +16,6 @@ public interface BaseBizService {
     List<?> searchOrder();
 
     List<?> searchStock();
+
+    Object reload(Set<Long> ids, PlanService<?> planService);
 }

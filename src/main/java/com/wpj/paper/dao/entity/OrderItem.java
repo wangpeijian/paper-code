@@ -12,13 +12,14 @@ import java.math.BigDecimal;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Product {
+public class OrderItem {
 
     @Id
     private Long id;
-
-    private String serviceCode;
-    private Long stock;
+    private Long orderId;
+    private Long productId;
+    private int num;
+    private Long price;
     private BigDecimal discount;
-    private Long originalPrice;
+
 }
