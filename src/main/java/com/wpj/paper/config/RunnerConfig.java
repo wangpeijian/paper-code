@@ -33,6 +33,12 @@ public class RunnerConfig implements CommandLineRunner {
     TradeRepository tradeRepository;
 
     @Autowired
+    OrderItemRepository orderItemRepository;
+
+    @Autowired
+    ReloadLogRepository reloadLogRepository;
+
+    @Autowired
     ConfigData configData;
 
     @Transactional
@@ -44,9 +50,12 @@ public class RunnerConfig implements CommandLineRunner {
         productRepository.updateAll(configData.getProductStockMax());
 
         log.info("清空历史数据");
-        billSourceRepository.deleteAll();
-        orderSourceRepository.deleteAll();
-        rechargeSourceRepository.deleteAll();
-        tradeRepository.deleteAll();
+        billSourceRepository.clear();
+        orderItemRepository.clear();
+        orderSourceRepository.clear();
+        rechargeSourceRepository.clear();
+        tradeRepository.clear();
+        reloadLogRepository.clear();
+        log.info("数据库初始化完成");
     }
 }

@@ -14,4 +14,8 @@ public interface RechargeSourceRepository extends JpaRepository<RechargeSource, 
     @Modifying()
     @Query(value = "update recharge_source set status_code = :#{#rechargeSource.statusCode}  where id = :#{#rechargeSource.id}", nativeQuery = true)
     int updateStatusCode(RechargeSource rechargeSource);
+
+    @Modifying()
+    @Query(value = "delete from recharge_source", nativeQuery = true)
+    int clear();
 }

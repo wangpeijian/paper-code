@@ -48,6 +48,9 @@ public abstract class AbstractBizService implements BaseBizService {
     OrderItemRepository orderItemRepository;
 
     @Autowired
+    ReloadLogRepository reloadLogRepository;
+
+    @Autowired
     Snowflake snowflake;
 
     @Autowired
@@ -61,7 +64,7 @@ public abstract class AbstractBizService implements BaseBizService {
 
     public BillSource createBillSource(long userId) {
         long id = Long.parseLong(snowflake.nextId());
-        long price = new Random().nextInt((int) configData.getCashInit() / 100);
+        long price = new Random().nextInt(10) * 1000;
 
         // 随机生成一条记录
         BillSource billSource = new BillSource(id, userId, price, id);
@@ -71,7 +74,7 @@ public abstract class AbstractBizService implements BaseBizService {
 
     public RechargeSource createRechargeSource(long userId) {
         long id = Long.parseLong(snowflake.nextId());
-        long price = new Random().nextInt((int) configData.getCashInit());
+        long price = new Random().nextInt((int) configData.getCashInit() / 1000) * 1000;
 
         // 随机生成一条记录
         RechargeSource rechargeSource = new RechargeSource(id, userId, price, id);
@@ -110,11 +113,12 @@ public abstract class AbstractBizService implements BaseBizService {
                 long price = new BigDecimal(product.getOriginalPrice().toString()).multiply(discount).multiply(BigDecimal.valueOf(num)).longValue();
                 OrderItem orderItem = new OrderItem(id, orderSource.getOrderId(), pid, num, price, discount);
                 orderItems.add(orderItem);
+                orderItemRepository.insert(orderItem);
             }
 
         });
 
-        orderItemRepository.saveAll(orderItems);
+
         return orderItems;
     }
 
@@ -187,7 +191,7 @@ public abstract class AbstractBizService implements BaseBizService {
         return planService.lockUser(userId, () -> {
             BillSource billSource = createBillSource(userId);
 
-            AccountCash accountCash = accountCashRepository.getOne(billSource.getUserId());
+            AccountCash accountCash = accountCashRepository.findById(billSource.getUserId()).get();
             AccountCredit accountCredit = accountCreditRepository.getOne(billSource.getUserId());
 
             // 扣减账单
@@ -199,7 +203,7 @@ public abstract class AbstractBizService implements BaseBizService {
 
             // 更新账户金额
             accountCashRepository.save(new AccountCash(billSource.getUserId(), consumeResult.getCash()));
-            accountCreditRepository.save(new AccountCredit(billSource.getUserId(), accountCredit.getCredit(), accountCredit.getCreditMax()));
+            accountCreditRepository.save(new AccountCredit(billSource.getUserId(), consumeResult.getCredit(), accountCredit.getCreditMax()));
 
             //更新bill source
             billSource.setStatusCode(1L);
@@ -247,6 +251,10 @@ public abstract class AbstractBizService implements BaseBizService {
         Product product = productRepository.getOne(pId);
         long reload = configData.getProductStockMax() - product.getStock();
         productRepository.reload(pId, reload);
+
+        long id = Long.parseLong(snowflake.nextId());
+        ReloadLog reloadLog = new ReloadLog(id,pId, reload);
+        reloadLogRepository.insert(reloadLog);
     }
 
     /**

@@ -40,7 +40,7 @@ public class JavaLockPlanServiceImpl implements PlanService<Object> {
         Lock lock = lockMap.computeIfAbsent(id, (Long key) -> new ReentrantLock());
 
         try {
-            if (lock.tryLock(5, TimeUnit.SECONDS)) {
+            if (lock.tryLock(2, TimeUnit.SECONDS)) {
                 return supplier.get();
             }
         } catch (InterruptedException e) {
@@ -62,7 +62,7 @@ public class JavaLockPlanServiceImpl implements PlanService<Object> {
             for (Long tid : tids) {
                 Lock lock = lockMap.computeIfAbsent(tid, (Long key) -> new ReentrantLock());
 
-                if (lock.tryLock(5, TimeUnit.SECONDS)) {
+                if (lock.tryLock(2, TimeUnit.SECONDS)) {
                     locks.add(lock);
                 } else {
                     throw new RuntimeException(String.format("获取锁超时 type: %s , id: %s", type, tid));

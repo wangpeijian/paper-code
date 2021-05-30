@@ -1,6 +1,7 @@
 package com.wpj.paper.controller;
 
 import com.wpj.paper.config.ConfigData;
+import com.wpj.paper.config.RunnerConfig;
 import com.wpj.paper.dao.entity.AccountCash;
 import com.wpj.paper.dao.entity.AccountCredit;
 import com.wpj.paper.dao.entity.Product;
@@ -52,10 +53,16 @@ public class GeneratorController {
     OrderItemRepository orderItemRepository;
 
     @Autowired
+    ReloadLogRepository reloadLogRepository;
+
+    @Autowired
     ConfigData configData;
 
     @Autowired
     GeneratorService generatorService;
+
+    @Autowired
+    RunnerConfig runnerConfig;
 
     /**
      * 重置数据
@@ -65,15 +72,8 @@ public class GeneratorController {
     @Transactional
     @GetMapping(value = "/reset")
     public Result<?> reset() {
-        log.info("reset accountCashRepository: {}", accountCashRepository.updateAll(configData.getCashInit()));
-        log.info("reset accountCreditRepository: {}", accountCreditRepository.updateAll(configData.getCreditInit()));
-        log.info("reset productRepository: {}", productRepository.updateAll(configData.getProductStockMax()));
 
-        billSourceRepository.deleteAll();
-        orderSourceRepository.deleteAll();
-        rechargeSourceRepository.deleteAll();
-        tradeRepository.deleteAll();
-        orderItemRepository.deleteAll();
+        runnerConfig.run();
 
         return Result.ok();
     }

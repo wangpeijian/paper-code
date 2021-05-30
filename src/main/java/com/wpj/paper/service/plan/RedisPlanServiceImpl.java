@@ -24,16 +24,22 @@ public class RedisPlanServiceImpl implements PlanService<Object> {
         String lockName = String.format("%s-lock-%s", lockPrefix, uid);
         RLock lock = redissonClient.getSpinLock(lockName);
 
-        log.info("lockName: {}", lockName);
+//        log.info("lockName: {}", lockName);
 
         try {
-            if (lock.tryLock(5, TimeUnit.SECONDS)) {
+            if (lock.tryLock(2, TimeUnit.SECONDS)) {
                 return supplier.get();
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
-            lock.unlock();
+            try{
+                if(lock.isLocked()){
+                    lock.unlock();
+                }
+            }catch (Exception e){
+                log.error("singleLock unlock error");
+            }
         }
 
         throw new RuntimeException("获取锁超时 lockName: " + lockName);
@@ -50,16 +56,20 @@ public class RedisPlanServiceImpl implements PlanService<Object> {
 
         RLock multiLock = redissonClient.getMultiLock(lockSet);
 
-        log.info("lockNames: {}", lockNames);
+//        log.info("lockNames: {}", lockNames);
 
         try {
-            if (multiLock.tryLock(5, TimeUnit.SECONDS)) {
+            if (multiLock.tryLock(2, TimeUnit.SECONDS)) {
                 return supplier.get();
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
-            multiLock.unlock();
+            try{
+                multiLock.unlock();
+            }catch (Exception e){
+                log.error("multiLock unlock error");
+            }
         }
 
         throw new RuntimeException("获取锁超时 lockNames: " + lockNames);

@@ -19,4 +19,8 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
     @Modifying
     @Query(value = "insert into trade (id, cash, create_time, credit, debt, source_id, type, user_id) values (:#{#trade.id}, :#{#trade.cash}, :#{#trade.createTime}, :#{#trade.credit}, :#{#trade.debt}, :#{#trade.sourceId}, :#{#trade.type}, :#{#trade.userId})", nativeQuery = true)
     int insert(Trade trade);
+
+    @Modifying()
+    @Query(value = "delete from trade", nativeQuery = true)
+    int clear();
 }

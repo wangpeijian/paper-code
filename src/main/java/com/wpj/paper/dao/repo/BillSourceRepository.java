@@ -14,4 +14,8 @@ public interface BillSourceRepository extends JpaRepository<BillSource, Long> {
     @Modifying()
     @Query(value = "update bill_source set status_code = :#{#billSource.statusCode}  where id = :#{#billSource.id}", nativeQuery = true)
     int  updateStatusCode(BillSource billSource);
+
+    @Modifying()
+    @Query(value = "delete from bill_source", nativeQuery = true)
+    int clear();
 }

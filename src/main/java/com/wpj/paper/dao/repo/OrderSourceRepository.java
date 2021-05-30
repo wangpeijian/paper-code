@@ -15,4 +15,8 @@ public interface OrderSourceRepository extends JpaRepository<OrderSource, Long> 
     @Modifying()
     @Query(value = "update order_source set status_code = :#{#orderSource.statusCode}, price = :#{#orderSource.price}  where id = :#{#orderSource.id}", nativeQuery = true)
     int updateStatusCodeAndPrice(OrderSource orderSource);
+
+    @Modifying()
+    @Query(value = "delete from order_source", nativeQuery = true)
+    int clear();
 }
