@@ -21,7 +21,9 @@ WHERE
 -- 验证用户账户购买/充值是否正确
 SELECT
 	*,
-	10000000 + 20000000 + cashRec + creditRec = cashBlance + creditBlance + cashConsum + creditConsum
+	( 100000000 + 20000000 + cashRec + creditRec ) AS `left`,
+	cashBlance + creditBlance + cashConsum + creditConsum AS `right`,
+	100000000 + 20000000 + cashRec + creditRec = cashBlance + creditBlance + cashConsum + creditConsum AS equals
 FROM
 	(
 	SELECT
@@ -39,7 +41,7 @@ FROM
 	IF
 		( ISNULL( t2s.credit ), 0, t2s.credit ) AS creditRec
 	FROM
-		`user` AS u
+		user_info AS u
 		LEFT JOIN account_cash AS ac ON ac.id = u.id
 		LEFT JOIN account_credit AS acr ON acr.id = u.id
 		LEFT JOIN (

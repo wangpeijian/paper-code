@@ -4,8 +4,7 @@ import com.wpj.paper.config.ConfigData;
 import com.wpj.paper.config.RunnerConfig;
 import com.wpj.paper.dao.entity.AccountCash;
 import com.wpj.paper.dao.entity.AccountCredit;
-import com.wpj.paper.dao.entity.Product;
-import com.wpj.paper.dao.entity.User;
+import com.wpj.paper.dao.entity.UserInfo;
 import com.wpj.paper.dao.repo.*;
 import com.wpj.paper.service.GeneratorService;
 import com.wpj.paper.vo.Result;
@@ -91,23 +90,23 @@ public class GeneratorController {
         userRepository.deleteAll();
 
         long i = 0;
-        ArrayList<User> user = new ArrayList<>(100);
+        ArrayList<UserInfo> userInfo = new ArrayList<>(100);
         ArrayList<AccountCash> cash = new ArrayList<>(100);
         ArrayList<AccountCredit> credit = new ArrayList<>(100);
 
         while (i++ < configData.getUserMax()) {
             String uuid = UUID.randomUUID().toString().replace("-", "");
 
-            user.add(new User(i, uuid.substring(16, 24)));
+            userInfo.add(new UserInfo(i, uuid.substring(16, 24)));
             cash.add(new AccountCash(i, configData.getCashInit()));
             credit.add(new AccountCredit(i, configData.getCashInit(), configData.getCreditInit()));
 
-            if (user.size() == 100) {
-                userRepository.saveAll(user);
+            if (userInfo.size() == 100) {
+                userRepository.saveAll(userInfo);
                 accountCashRepository.saveAll(cash);
                 accountCreditRepository.saveAll(credit);
 
-                user.clear();
+                userInfo.clear();
                 cash.clear();
                 credit.clear();
             }

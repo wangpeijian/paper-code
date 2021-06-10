@@ -17,10 +17,10 @@ spring:
 
 config:
     user-max: 3000
-    cash-init: 10000000
+    cash-init: 100000000
     credit-init: 20000000
     product-max: 1000000
     product-stock-max: 1000000
-    product-zipf: 0.9
+    product-zipf: 1.3
     pool-size: 16
     batch-size: 10

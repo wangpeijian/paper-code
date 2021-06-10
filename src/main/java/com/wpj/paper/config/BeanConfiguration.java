@@ -42,6 +42,7 @@ public class BeanConfiguration {
 
     @Bean
     public ZipfGenerator productZipf(){
+        log.info("商品库zipf系数: [{}]", configData.getProductZipf());
         return new ZipfGenerator((int) configData.getProductMax(), configData.getProductZipf());
     }
 }

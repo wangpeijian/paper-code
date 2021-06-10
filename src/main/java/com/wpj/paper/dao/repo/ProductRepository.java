@@ -18,13 +18,13 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query(value = "UPDATE product SET stock = stock - :num where id = :serviceId and stock >= :num", nativeQuery = true)
     int deductStock(Long serviceId, Long num);
 
-    @Query(value = "select id from product order by stock desc limit 10", nativeQuery = true)
+    @Query(value = "select id from product order by stock ASC limit 10", nativeQuery = true)
     Set<Long> findInsufficient();
 
-    @Query(value = "select * from `product` where id = :pid for update", nativeQuery = true)
+    @Query(value = "select * from product where id = :pid for update", nativeQuery = true)
     Product forUpdateLock(long pid);
 
-    @Query(value = "select * from `product` where id in (:pids) for update", nativeQuery = true)
+    @Query(value = "select * from product where id in (:pids) for update", nativeQuery = true)
     List<Product> forUpdateLock(Set<Long> pids);
 
     @Modifying

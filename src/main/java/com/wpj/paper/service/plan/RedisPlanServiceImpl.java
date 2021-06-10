@@ -1,15 +1,14 @@
 package com.wpj.paper.service.plan;
 
 import com.alibaba.fastjson.JSON;
+import com.wpj.paper.util.RedisUtil;
+import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RLock;
-import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -18,58 +17,32 @@ import java.util.stream.Collectors;
 public class RedisPlanServiceImpl implements PlanService<Object> {
 
     @Autowired
-    RedissonClient redissonClient;
+    private RedisUtil redisUtil;
 
     private Object lock(String lockPrefix, long uid, Supplier<Long> supplier) {
         String lockName = String.format("%s-lock-%s", lockPrefix, uid);
-        RLock lock = redissonClient.getSpinLock(lockName);
 
-//        log.info("lockName: {}", lockName);
-
-        try {
-            if (lock.tryLock(2, TimeUnit.SECONDS)) {
-                return supplier.get();
-            }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } finally {
-            try{
-                if(lock.isLocked()){
-                    lock.unlock();
-                }
-            }catch (Exception e){
-                log.error("singleLock unlock error");
-            }
+        Pair<Boolean, Long> pair = redisUtil.tryLock(lockName, 2000, 10000, supplier);
+        if (pair.getKey()) {
+            return pair.getValue();
         }
 
         throw new RuntimeException("获取锁超时 lockName: " + lockName);
+
     }
 
     private Object lock(String lockPrefix, Set<Long> ids, Supplier<Long> supplier) {
         TreeSet<Long> tids = new TreeSet<>(ids);
 
-        String lockNames = JSON.toJSONString(tids.stream().map(uid -> String.format("%s-lock:-%s", lockPrefix, uid)).collect(Collectors.toSet()));
+        Set<String> lockSet = tids.stream()
+                .map(uid -> String.format("%s-lock:-%s", lockPrefix, uid))
+                .collect(Collectors.toSet());
 
-        RLock[] lockSet = tids.stream()
-                .map(uid -> redissonClient.getSpinLock(String.format("%s-lock:-%s", lockPrefix, uid)))
-                .collect(Collectors.toSet()).toArray(new RLock[tids.size()]);
+        String lockNames = JSON.toJSONString(lockSet);
 
-        RLock multiLock = redissonClient.getMultiLock(lockSet);
-
-//        log.info("lockNames: {}", lockNames);
-
-        try {
-            if (multiLock.tryLock(2, TimeUnit.SECONDS)) {
-                return supplier.get();
-            }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } finally {
-            try{
-                multiLock.unlock();
-            }catch (Exception e){
-                log.error("multiLock unlock error");
-            }
+        Pair<Boolean, Long> pair = redisUtil.tryLock(lockSet, 2000, 10000, supplier);
+        if (pair.getKey()) {
+            return pair.getValue();
         }
 
         throw new RuntimeException("获取锁超时 lockNames: " + lockNames);

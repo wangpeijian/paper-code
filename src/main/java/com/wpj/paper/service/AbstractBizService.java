@@ -3,10 +3,10 @@ package com.wpj.paper.service;
 import com.wpj.paper.config.ConfigData;
 import com.wpj.paper.dao.entity.*;
 import com.wpj.paper.dao.repo.*;
+import com.wpj.paper.exception.BizException;
 import com.wpj.paper.service.model.ConsumeResult;
 import com.wpj.paper.service.model.RechargeResult;
 import com.wpj.paper.service.plan.PlanService;
-import com.wpj.paper.util.Disperser;
 import com.wpj.paper.util.Snowflake;
 import com.wpj.paper.util.ZipfGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +19,17 @@ import java.util.*;
 
 @Service
 public abstract class AbstractBizService implements BaseBizService {
+
+    // 保存部署该Bean时指定的id属性
+    private String beanName;
+    public void setBeanName(String name)
+    {
+        this.beanName = name;
+    }
+
+    public String getBeanName(){
+        return beanName;
+    }
 
     @Autowired
     BillSourceRepository billSourceRepository;
@@ -74,7 +85,7 @@ public abstract class AbstractBizService implements BaseBizService {
 
     public RechargeSource createRechargeSource(long userId) {
         long id = Long.parseLong(snowflake.nextId());
-        long price = new Random().nextInt((int) configData.getCashInit() / 1000) * 1000;
+        long price = new Random().nextInt((int) configData.getCashInit() / 1000);
 
         // 随机生成一条记录
         RechargeSource rechargeSource = new RechargeSource(id, userId, price, id);
@@ -145,7 +156,7 @@ public abstract class AbstractBizService implements BaseBizService {
 
                 // 余额足够,尝试扣减库存
                 if (orderItems.size() == 0) {
-                    throw new RuntimeException("库存不足");
+                    throw new BizException("库存不足");
                 }
 
                 //更新order source
@@ -154,15 +165,15 @@ public abstract class AbstractBizService implements BaseBizService {
                 orderSource.setStatusCode(1L);
                 orderSourceRepository.updateStatusCodeAndPrice(orderSource);
 
-                AccountCash accountCash = accountCashRepository.getOne(userId);
-                AccountCredit accountCredit = accountCreditRepository.getOne(userId);
+                AccountCash accountCash = accountCashRepository.findById(userId).get();
+                AccountCredit accountCredit = accountCreditRepository.findById(userId).get();
 
                 // 扣减账单
                 ConsumeResult consumeResult = consume(accountCash.getCash(), accountCredit.getCredit(), orderSource.getPrice());
 
                 // 余额不足直接返回
                 if (consumeResult.hasDebt()) {
-                    throw new RuntimeException("余额不足");
+                    throw new BizException("余额不足");
                 }
 
                 // 创建流水记录
@@ -171,7 +182,7 @@ public abstract class AbstractBizService implements BaseBizService {
 
                 // 更新账户金额
                 accountCashRepository.save(new AccountCash(userId, consumeResult.getCash()));
-                accountCreditRepository.save(new AccountCredit(userId, accountCredit.getCredit(), accountCredit.getCreditMax()));
+                accountCreditRepository.save(new AccountCredit(userId, consumeResult.getCredit(), accountCredit.getCreditMax()));
 
                 return 1L;
             });
@@ -192,7 +203,7 @@ public abstract class AbstractBizService implements BaseBizService {
             BillSource billSource = createBillSource(userId);
 
             AccountCash accountCash = accountCashRepository.findById(billSource.getUserId()).get();
-            AccountCredit accountCredit = accountCreditRepository.getOne(billSource.getUserId());
+            AccountCredit accountCredit = accountCreditRepository.findById(billSource.getUserId()).get();
 
             // 扣减账单
             ConsumeResult consumeResult = consume(accountCash.getCash(), accountCredit.getCredit(), billSource.getAmount());
@@ -220,13 +231,17 @@ public abstract class AbstractBizService implements BaseBizService {
 
         // 补充信用额度
         // 现金账户充值
-        AccountCash accountCash = accountCashRepository.getOne(rechargeSource.getUserId());
-        AccountCredit accountCredit = accountCreditRepository.getOne(rechargeSource.getUserId());
+        AccountCash accountCash = accountCashRepository.findById(userId).get();
+        AccountCredit accountCredit = accountCreditRepository.findById(userId).get();
         RechargeResult rechargeResult = calculationRecharge(rechargeSource.getAmount(), balance, accountCash.getCash(), accountCredit.getCredit(), accountCredit.getCreditMax());
 
         // 创建流水记录
-        Trade trade = createTrade(4, rechargeSource.getRechargeId(), userId, rechargeResult);
+        Trade trade = createTrade(3, rechargeSource.getRechargeId(), userId, rechargeResult);
         tradeRepository.insert(trade);
+
+        // 更新账户金额
+        accountCashRepository.save(new AccountCash(rechargeSource.getUserId(), rechargeResult.getCash()));
+        accountCreditRepository.save(new AccountCredit(rechargeSource.getUserId(), rechargeResult.getCredit(), accountCredit.getCreditMax()));
 
         //更新recharge source
         rechargeSource.setStatusCode(1L);
@@ -429,10 +444,10 @@ public abstract class AbstractBizService implements BaseBizService {
                 product.setId(serviceId);
                 return productRepository.findAll(productExample, PageRequest.of(pageIndex, pageSize)).getContent();
             case 1:
-                User user = new User();
-                Example<User> userExample = Example.of(user);
+                UserInfo userInfo = new UserInfo();
+                Example<UserInfo> userExample = Example.of(userInfo);
 
-                user.setId(0L);
+                userInfo.setId(0L);
                 return userRepository.findAll(userExample, PageRequest.of(pageIndex, pageSize)).getContent();
             case 2:
                 AccountCash accountCash = new AccountCash();

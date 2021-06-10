@@ -8,16 +8,16 @@ import com.wpj.paper.dao.repo.BillSourceRepository;
 import com.wpj.paper.dao.repo.OrderSourceRepository;
 import com.wpj.paper.dao.repo.ProductRepository;
 import com.wpj.paper.dao.repo.RechargeSourceRepository;
+import com.wpj.paper.exception.BizException;
 import com.wpj.paper.service.BaseBizService;
 import com.wpj.paper.service.plan.PlanService;
-import com.wpj.paper.util.ActionFactor;
-import com.wpj.paper.util.Disperser;
-import com.wpj.paper.util.Snowflake;
-import com.wpj.paper.util.ZipfGenerator;
+import com.wpj.paper.util.*;
 import com.wpj.paper.vo.Result;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.jni.Error;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -78,6 +78,13 @@ public class RunController {
     @Autowired
     ZipfGenerator userZipf;
 
+    @Autowired
+    LockPlanRecord lockPlanRecord;
+
+
+    @Value("${spring.profiles.active}")
+    private String activeProfile;
+
 
     @GetMapping(value = "/preheat")
     public Result<?> preheat() {
@@ -95,10 +102,17 @@ public class RunController {
         Integer type = ActionFactor.getAction();
 
         BaseBizService service = getService(isolation);
+        assert service != null;
+        lockPlanRecord.setCode(String.format("%s-%s", activeProfile, service.getBeanName()));
 
         PlanService<?> planService = getPlanService(pType);
 
-        return Result.ok(type.toString(), doService(service, type, planService));
+        try{
+            return Result.ok(type.toString(), doService(service, type, planService));
+        }catch (BizException bizException){
+            log.info("biz error", bizException);
+            return Result.error(bizException.getMessage());
+        }
     }
 
     private PlanService<?> getPlanService(String pType) {

@@ -1,8 +1,20 @@
 spring:
     datasource:
-        username: root
+        username: postgres
         password: 123456
-        url: jdbc:mysql://localhost:3306/paper?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&failOverReadOnly=false
+        url: jdbc:postgresql://localhost:5432/postgres?useSSL=false
+        platform: postgres
+        driverClassName: org.postgresql.Driver
+        tomcat:
+            max-active: 300
+            initial-size: 300
+
+    jpa:
+        properties:
+            hibernate:
+                dialect: org.hibernate.dialect.PostgreSQLDialect
+                temp:
+                  use_jdbc_metadata_defaults: false
 isolation:
     ssi: PgSsi
     rr: PgRr
