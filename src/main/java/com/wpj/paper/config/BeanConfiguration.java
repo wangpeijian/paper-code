@@ -1,12 +1,15 @@
 package com.wpj.paper.config;
 
+import com.alibaba.druid.pool.DruidDataSource;
 import com.wpj.paper.util.Snowflake;
 import com.wpj.paper.util.ZipfGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.sql.DataSource;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Random;
@@ -45,4 +48,13 @@ public class BeanConfiguration {
         log.info("商品库zipf系数: [{}]", configData.getProductZipf());
         return new ZipfGenerator((int) configData.getProductMax(), configData.getProductZipf());
     }
+
+
+    @ConfigurationProperties(prefix = "spring.datasource")
+    @Bean
+    public DataSource druid() {
+        return new DruidDataSource();
+    }
+
+
 }

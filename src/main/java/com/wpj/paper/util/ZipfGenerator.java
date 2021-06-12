@@ -37,17 +37,17 @@ public class ZipfGenerator implements Serializable {
         for (int i = 1; i <= size; i++) {
             double p = (Constant / Math.pow(i, skew)) / div;
 
-            if(i < 10 || i > 999990){
-                ArrayList<Object> point = new ArrayList<>();
-                point.add(i);
-                point.add(p);
-                arr.add(point);
-            }else if(random.nextDouble() < 0.001){
-                ArrayList<Object> point = new ArrayList<>();
-                point.add(i);
-                point.add(p);
-                arr.add(point);
-            }
+//            if(i < 10 || i > 999990){
+//                ArrayList<Object> point = new ArrayList<>();
+//                point.add(i);
+//                point.add(p);
+//                arr.add(point);
+//            }else if(random.nextDouble() < 0.001){
+//                ArrayList<Object> point = new ArrayList<>();
+//                point.add(i);
+//                point.add(p);
+//                arr.add(point);
+//            }
 
             sum += p;
             map.put(sum, i - 1);
