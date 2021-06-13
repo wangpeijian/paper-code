@@ -7,10 +7,12 @@ import com.wpj.paper.dao.entity.AccountCredit;
 import com.wpj.paper.dao.entity.UserInfo;
 import com.wpj.paper.dao.repo.*;
 import com.wpj.paper.service.GeneratorService;
+import com.wpj.paper.util.ZipfGenerator;
 import com.wpj.paper.vo.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -62,6 +64,9 @@ public class GeneratorController {
 
     @Autowired
     RunnerConfig runnerConfig;
+
+    @Autowired
+    ZipfGenerator productZipf;
 
     /**
      * 重置数据
@@ -142,7 +147,18 @@ public class GeneratorController {
 //            }
 //        }
 //
+        Thread.sleep(2000);
         return Result.ok();
     }
 
+    /**
+     * 创建商品相关数据
+     *
+     * @return
+     */
+    @GetMapping(value = "/updateZipf/{zipf}")
+    public Result<?> updateZipf(@PathVariable("zipf") float zipf)  {
+        productZipf.update((int) configData.getProductMax(), zipf);
+        return Result.ok();
+    }
 }

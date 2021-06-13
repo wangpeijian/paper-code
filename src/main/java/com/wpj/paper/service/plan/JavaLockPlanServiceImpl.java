@@ -46,7 +46,11 @@ public class JavaLockPlanServiceImpl implements PlanService<Object> {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
-            lock.unlock();
+            try {
+                lock.unlock();
+            } catch (Exception ignored) {
+
+            }
         }
 
         throw new RuntimeException(String.format("获取锁超时 type: %s , id: %s", type, id));
@@ -75,7 +79,14 @@ public class JavaLockPlanServiceImpl implements PlanService<Object> {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
-            locks.forEach(Lock::unlock);
+
+            locks.forEach(lock -> {
+                try {
+                    lock.unlock();
+                } catch (Exception ignored) {
+
+                }
+            });
         }
 
         throw new RuntimeException(String.format("获取锁超时 type: %s , ids: %s", type, JSON.toJSONString(ids)));

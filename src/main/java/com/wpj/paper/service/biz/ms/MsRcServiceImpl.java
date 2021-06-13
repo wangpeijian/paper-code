@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Set;
 
 @Transactional(rollbackFor = Exception.class, isolation = Isolation.READ_COMMITTED)
@@ -26,8 +27,15 @@ public class MsRcServiceImpl extends AbstractBizService {
     public Object recharge(Set<Long> userIds, PlanService<?> planService) {
         return doRecharge(userIds, planService);
     }
+@Override
+    public List<?> searchOrder() {
+        return doSearchOrder();
+    }
 
     @Override
+    public List<?> searchStock() {
+        return doSearchStock();
+    }@Override
     public Object reload(Set<Long> pIds, PlanService<?> planService) {
         return doReload(pIds, planService);
     }

@@ -1,9 +1,13 @@
 package com.wpj.paper.dao.repo;
 
 import com.wpj.paper.dao.entity.BillSource;
+import com.wpj.paper.dao.entity.OrderSource;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+
+import java.util.List;
+import java.util.Set;
 
 public interface BillSourceRepository extends JpaRepository<BillSource, Long> {
 
@@ -18,4 +22,7 @@ public interface BillSourceRepository extends JpaRepository<BillSource, Long> {
     @Modifying()
     @Query(value = "delete from bill_source", nativeQuery = true)
     int clear();
+
+    @Query(value = "select * from bill_source where user_id in (:uIds) limit 100 for update", nativeQuery = true)
+    List<BillSource> findForUpdate(Set<Long> uIds);
 }

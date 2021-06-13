@@ -1,6 +1,7 @@
 package com.wpj.paper.util;
 
 import com.alibaba.fastjson.JSON;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -8,6 +9,7 @@ import java.util.NavigableMap;
 import java.util.Random;
 import java.util.TreeMap;
 
+@Slf4j
 public class ZipfGenerator implements Serializable {
     private static final Random random = new Random(0);
     private final NavigableMap<Double, Integer> map;
@@ -16,13 +18,14 @@ public class ZipfGenerator implements Serializable {
     private static final ArrayList<ArrayList<Object>> arr = new ArrayList<>();
 
     public ZipfGenerator(int R, double F) {
-        // create the TreeMap
+        log.info("初始化zipf R:{}, F:{}", R, F);
         map = computeMap(R, F);
     }
 
     //size为rank个数，skew为数据倾斜程度, 取值为0表示数据无倾斜，取值越大倾斜程度越高
-    private static NavigableMap<Double, Integer> computeMap(
-            int size, double skew) {
+    private static NavigableMap<Double, Integer> computeMap( int size, double skew) {
+        arr.clear();
+
         NavigableMap<Double, Integer> map = new TreeMap<>();
         //总频率
         double div = 0;
@@ -37,17 +40,17 @@ public class ZipfGenerator implements Serializable {
         for (int i = 1; i <= size; i++) {
             double p = (Constant / Math.pow(i, skew)) / div;
 
-//            if(i < 10 || i > 999990){
-//                ArrayList<Object> point = new ArrayList<>();
-//                point.add(i);
-//                point.add(p);
-//                arr.add(point);
-//            }else if(random.nextDouble() < 0.001){
-//                ArrayList<Object> point = new ArrayList<>();
-//                point.add(i);
-//                point.add(p);
-//                arr.add(point);
-//            }
+            if(i < 10 || i > 999990){
+                ArrayList<Object> point = new ArrayList<>();
+                point.add(i);
+                point.add(p);
+                arr.add(point);
+            }else if(random.nextDouble() < 0.001){
+                ArrayList<Object> point = new ArrayList<>();
+                point.add(i);
+                point.add(p);
+                arr.add(point);
+            }
 
             sum += p;
             map.put(sum, i - 1);
@@ -56,7 +59,9 @@ public class ZipfGenerator implements Serializable {
                 psum += p;
             }
         }
-        System.out.println("20%的数据集中率" + psum / sum);
+
+        log.info("20%的数据集中率: [{}]", psum / sum);
+
         return map;
     }
 
@@ -70,8 +75,16 @@ public class ZipfGenerator implements Serializable {
         return map.ceilingEntry(value).getValue() + 1;
     }
 
+    public void update(int R, double F){
+        log.info("更新zipf R:{}, F:{}", R, F);
+        map.clear();
+        map.putAll(computeMap(R, F));
+
+        log.info(this.print());
+    }
+
     public static void main(String[] args) {
-        ZipfGenerator zipf = new ZipfGenerator(100*10000, 1.7);
-        System.out.println(zipf.print());
+        ZipfGenerator zipf = new ZipfGenerator(100*10000, 1.1);
+        log.info(zipf.print());
     }
 }

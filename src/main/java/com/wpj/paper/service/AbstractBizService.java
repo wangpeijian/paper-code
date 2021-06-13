@@ -22,12 +22,12 @@ public abstract class AbstractBizService implements BaseBizService {
 
     // 保存部署该Bean时指定的id属性
     private String beanName;
-    public void setBeanName(String name)
-    {
+
+    public void setBeanName(String name) {
         this.beanName = name;
     }
 
-    public String getBeanName(){
+    public String getBeanName() {
         return beanName;
     }
 
@@ -268,7 +268,7 @@ public abstract class AbstractBizService implements BaseBizService {
         productRepository.reload(pId, reload);
 
         long id = Long.parseLong(snowflake.nextId());
-        ReloadLog reloadLog = new ReloadLog(id,pId, reload);
+        ReloadLog reloadLog = new ReloadLog(id, pId, reload);
         reloadLogRepository.insert(reloadLog);
     }
 
@@ -385,85 +385,62 @@ public abstract class AbstractBizService implements BaseBizService {
         return trade;
     }
 
+    public List<?> doSearchOrder() {
+        int type = new Random().nextInt(3);
 
-    @Override
-    public List<?> searchOrder() {
-        int pageSize = (new Random().nextInt(3) + 1) * 10;
-        int pageIndex = new Random().nextInt(100);
-
-        int type = new Random().nextInt(4);
-        long userId = new Random().nextInt((int) configData.getUserMax()) + 1;
+        Set<Long> uIds = new HashSet<>();
+        while (uIds.size() < configData.getBatchSize()) {
+            uIds.add((long) userZipf.next());
+        }
+        List<?> res = new ArrayList<>();
 
         switch (type) {
             case 0:
-                OrderSource orderSource = new OrderSource();
-                Example<OrderSource> orderExample = Example.of(orderSource);
-
-                orderSource.setUserId(userId);
-                return orderSourceRepository.findAll(orderExample, PageRequest.of(pageIndex, pageSize)).getContent();
+                res = orderSourceRepository.findForUpdate(uIds);
+                break;
             case 1:
-                Trade trade = new Trade();
-                Example<Trade> tradeExample = Example.of(trade);
-
-                trade.setUserId(userId);
-                return tradeRepository.findAll(tradeExample, PageRequest.of(pageIndex, pageSize)).getContent();
+                res = tradeRepository.findForUpdate(uIds);
+                break;
             case 2:
-                BillSource billSource = new BillSource();
-                Example<BillSource> billSourceExample = Example.of(billSource);
-
-                billSource.setUserId(userId);
-                return billSourceRepository.findAll(billSourceExample, PageRequest.of(pageIndex, pageSize)).getContent();
-            case 3:
-                RechargeSource rechargeSource = new RechargeSource();
-                Example<RechargeSource> rechargeSourceExample = Example.of(rechargeSource);
-
-                rechargeSource.setUserId(userId);
-                return rechargeSourceRepository.findAll(rechargeSourceExample, PageRequest.of(pageIndex, pageSize)).getContent();
+                res = billSourceRepository.findForUpdate(uIds);
+                break;
         }
 
-        return null;
+        try {
+            Thread.sleep(300);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return res;
     }
 
-    @Override
-    public List<?> searchStock() {
-        int pageSize = (new Random().nextInt(3) + 1) * 10;
-        int pageIndex = new Random().nextInt(100);
+    public List<?> doSearchStock() {
+        int type = new Random().nextInt(2);
 
-        long userId = new Random().nextInt((int) configData.getUserMax()) + 1;
+        Set<Long> pIds = new HashSet<>();
+        while (pIds.size() < configData.getBatchSize()) {
+            pIds.add((long) productZipf.next());
+        }
 
-
-        int type = new Random().nextInt(4);
-
+        List<?> res = new ArrayList<>();
 
         switch (type) {
             case 0:
-                Product product = new Product();
-                Example<Product> productExample = Example.of(product);
-
-                long serviceId = new Random().nextInt((int) configData.getProductMax()) + 1;
-                product.setId(serviceId);
-                return productRepository.findAll(productExample, PageRequest.of(pageIndex, pageSize)).getContent();
+                res = orderItemRepository.findForUpdate(pIds);
+                break;
             case 1:
-                UserInfo userInfo = new UserInfo();
-                Example<UserInfo> userExample = Example.of(userInfo);
-
-                userInfo.setId(0L);
-                return userRepository.findAll(userExample, PageRequest.of(pageIndex, pageSize)).getContent();
-            case 2:
-                AccountCash accountCash = new AccountCash();
-                Example<AccountCash> accountCashExample = Example.of(accountCash);
-
-                accountCash.setId(userId);
-                return accountCashRepository.findAll(accountCashExample, PageRequest.of(pageIndex, pageSize)).getContent();
-            case 3:
-                AccountCredit accountCredit = new AccountCredit();
-                Example<AccountCredit> accountCreditExample = Example.of(accountCredit);
-
-                accountCredit.setId(userId);
-                return accountCreditRepository.findAll(accountCreditExample, PageRequest.of(pageIndex, pageSize)).getContent();
+                res = reloadLogRepository.findForUpdate(pIds);
+                break;
         }
 
-        return null;
+        try {
+            Thread.sleep(300);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return res;
     }
 
 }
