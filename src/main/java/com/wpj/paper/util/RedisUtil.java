@@ -87,7 +87,7 @@ public class RedisUtil {
                         lockIdentity.put(lockName, identity);
                     }
 
-                    if(!locked){
+                    if (!locked) {
                         try {
                             Thread.sleep(20);
                         } catch (InterruptedException e) {

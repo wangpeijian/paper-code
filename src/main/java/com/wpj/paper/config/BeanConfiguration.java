@@ -39,12 +39,12 @@ public class BeanConfiguration {
     }
 
     @Bean
-    public ZipfGenerator userZipf(){
-       return new ZipfGenerator((int) configData.getUserMax(), 0.9);
+    public ZipfGenerator userZipf() {
+        return new ZipfGenerator((int) configData.getUserMax(), 0.9);
     }
 
     @Bean
-    public ZipfGenerator productZipf(){
+    public ZipfGenerator productZipf() {
         log.info("商品库zipf系数: [{}]", configData.getProductZipf());
         return new ZipfGenerator((int) configData.getProductMax(), configData.getProductZipf());
     }

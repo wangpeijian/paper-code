@@ -13,19 +13,17 @@ import javax.persistence.Id;
 @NoArgsConstructor
 public class RechargeSource {
 
-    public RechargeSource(Long id, Long userId, Long amount,  Long rechargeId) {
+    @Id
+    private Long id;
+    private Long userId;
+    private Long amount;
+    private Long rechargeId;
+    private Long statusCode;
+    public RechargeSource(Long id, Long userId, Long amount, Long rechargeId) {
         this.id = id;
         this.userId = userId;
         this.amount = amount;
         this.rechargeId = rechargeId;
         this.statusCode = 0L;
     }
-
-    @Id
-    private Long id;
-
-    private Long userId;
-    private Long amount;
-    private Long rechargeId;
-    private Long statusCode;
 }

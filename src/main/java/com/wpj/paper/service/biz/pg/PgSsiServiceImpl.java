@@ -2,9 +2,6 @@ package com.wpj.paper.service.biz.pg;
 
 import com.wpj.paper.service.AbstractBizService;
 import com.wpj.paper.service.plan.PlanService;
-import com.wpj.paper.util.LockPlanRecord;
-import org.hibernate.exception.LockAcquisitionException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +12,6 @@ import java.util.Set;
 @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
 @Service("PgSsi")
 public class PgSsiServiceImpl extends AbstractBizService {
-
 
 
     @Override
@@ -32,7 +28,8 @@ public class PgSsiServiceImpl extends AbstractBizService {
     public Object recharge(Set<Long> userIds, PlanService<?> planService) {
         return doRecharge(userIds, planService);
     }
-@Override
+
+    @Override
     public List<?> searchOrder() {
         return doSearchOrder();
     }
@@ -40,7 +37,9 @@ public class PgSsiServiceImpl extends AbstractBizService {
     @Override
     public List<?> searchStock() {
         return doSearchStock();
-    }@Override
+    }
+
+    @Override
     public Object reload(Set<Long> pIds, PlanService<?> planService) {
         return doReload(pIds, planService);
     }

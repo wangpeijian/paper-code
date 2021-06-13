@@ -12,10 +12,9 @@ import java.util.TreeMap;
 @Slf4j
 public class ZipfGenerator implements Serializable {
     private static final Random random = new Random(0);
-    private final NavigableMap<Double, Integer> map;
     private static final double Constant = 1.0;
-
     private static final ArrayList<ArrayList<Object>> arr = new ArrayList<>();
+    private final NavigableMap<Double, Integer> map;
 
     public ZipfGenerator(int R, double F) {
         log.info("初始化zipf R:{}, F:{}", R, F);
@@ -23,7 +22,7 @@ public class ZipfGenerator implements Serializable {
     }
 
     //size为rank个数，skew为数据倾斜程度, 取值为0表示数据无倾斜，取值越大倾斜程度越高
-    private static NavigableMap<Double, Integer> computeMap( int size, double skew) {
+    private static NavigableMap<Double, Integer> computeMap(int size, double skew) {
         arr.clear();
 
         NavigableMap<Double, Integer> map = new TreeMap<>();
@@ -40,12 +39,12 @@ public class ZipfGenerator implements Serializable {
         for (int i = 1; i <= size; i++) {
             double p = (Constant / Math.pow(i, skew)) / div;
 
-            if(i < 10 || i > 999990){
+            if (i < 10 || i > 999990) {
                 ArrayList<Object> point = new ArrayList<>();
                 point.add(i);
                 point.add(p);
                 arr.add(point);
-            }else if(random.nextDouble() < 0.001){
+            } else if (random.nextDouble() < 0.001) {
                 ArrayList<Object> point = new ArrayList<>();
                 point.add(i);
                 point.add(p);
@@ -65,6 +64,11 @@ public class ZipfGenerator implements Serializable {
         return map;
     }
 
+    public static void main(String[] args) {
+        ZipfGenerator zipf = new ZipfGenerator(100 * 10000, 1.1);
+        log.info(zipf.print());
+    }
+
     public String print() {
         return JSON.toJSONString(arr);
     }
@@ -75,16 +79,11 @@ public class ZipfGenerator implements Serializable {
         return map.ceilingEntry(value).getValue() + 1;
     }
 
-    public void update(int R, double F){
+    public void update(int R, double F) {
         log.info("更新zipf R:{}, F:{}", R, F);
         map.clear();
         map.putAll(computeMap(R, F));
 
         log.info(this.print());
-    }
-
-    public static void main(String[] args) {
-        ZipfGenerator zipf = new ZipfGenerator(100*10000, 1.1);
-        log.info(zipf.print());
     }
 }

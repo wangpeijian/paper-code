@@ -1,7 +1,6 @@
 package com.wpj.paper.dao.repo;
 
 import com.wpj.paper.dao.entity.BillSource;
-import com.wpj.paper.dao.entity.OrderSource;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -17,7 +16,7 @@ public interface BillSourceRepository extends JpaRepository<BillSource, Long> {
 
     @Modifying()
     @Query(value = "update bill_source set status_code = :#{#billSource.statusCode}  where id = :#{#billSource.id}", nativeQuery = true)
-    int  updateStatusCode(BillSource billSource);
+    int updateStatusCode(BillSource billSource);
 
     @Modifying()
     @Query(value = "delete from bill_source", nativeQuery = true)

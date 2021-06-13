@@ -7,9 +7,9 @@ import java.util.concurrent.TimeUnit;
 
 public class ThreadExecutor {
 
-    private int size;
+    private final int size;
 
-    private HashMap<Integer, ThreadPoolExecutor> taskMap;
+    private final HashMap<Integer, ThreadPoolExecutor> taskMap;
 
     public ThreadExecutor(int size) {
         this.size = size;

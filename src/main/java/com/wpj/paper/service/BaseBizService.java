@@ -8,7 +8,7 @@ import java.util.Set;
 
 public interface BaseBizService extends BeanNameAware {
 
-    public String getBeanName();
+    String getBeanName();
 
     Object usageBill(long userId, PlanService<?> planService);
 

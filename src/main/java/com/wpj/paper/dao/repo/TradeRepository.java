@@ -1,6 +1,5 @@
 package com.wpj.paper.dao.repo;
 
-import com.wpj.paper.dao.entity.OrderSource;
 import com.wpj.paper.dao.entity.Trade;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

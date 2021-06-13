@@ -26,7 +26,8 @@ public class MsRuServiceImpl extends AbstractBizService {
     public Object recharge(Set<Long> userIds, PlanService<?> planService) {
         return doRecharge(userIds, planService);
     }
-@Override
+
+    @Override
     public List<?> searchOrder() {
         return doSearchOrder();
     }
@@ -34,7 +35,9 @@ public class MsRuServiceImpl extends AbstractBizService {
     @Override
     public List<?> searchStock() {
         return doSearchStock();
-    }@Override
+    }
+
+    @Override
     public Object reload(Set<Long> pIds, PlanService<?> planService) {
         return doReload(pIds, planService);
     }

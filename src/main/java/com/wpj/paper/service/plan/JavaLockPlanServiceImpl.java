@@ -15,12 +15,10 @@ import java.util.function.Supplier;
 @Service("javaLockPlan")
 public class JavaLockPlanServiceImpl implements PlanService<Object> {
 
-    Map<Long, Lock> userLocks = new ConcurrentHashMap<>();
-    Map<Long, Lock> productLocks = new ConcurrentHashMap<>();
-
     private final static String USER_LOCK = "user";
     private final static String PRODUCT_LOCK = "product";
-
+    Map<Long, Lock> userLocks = new ConcurrentHashMap<>();
+    Map<Long, Lock> productLocks = new ConcurrentHashMap<>();
 
     private Map<Long, Lock> getLockMap(String type) {
         switch (type) {

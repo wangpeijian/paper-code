@@ -1,6 +1,5 @@
 package com.wpj.paper.dao.repo;
 
-import com.wpj.paper.dao.entity.BillSource;
 import com.wpj.paper.dao.entity.RechargeSource;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

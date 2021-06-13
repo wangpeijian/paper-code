@@ -157,7 +157,7 @@ public class GeneratorController {
      * @return
      */
     @GetMapping(value = "/updateZipf/{zipf}")
-    public Result<?> updateZipf(@PathVariable("zipf") float zipf)  {
+    public Result<?> updateZipf(@PathVariable("zipf") float zipf) {
         productZipf.update((int) configData.getProductMax(), zipf);
         return Result.ok();
     }

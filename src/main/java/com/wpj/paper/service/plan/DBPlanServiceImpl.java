@@ -5,14 +5,10 @@ import com.wpj.paper.dao.repo.UserRepository;
 import com.wpj.paper.util.LockPlanRecord;
 import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.exception.LockAcquisitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Supplier;
 
 @Slf4j
@@ -44,7 +40,7 @@ public class DBPlanServiceImpl implements PlanService<Object> {
                 log.error("pgsql上锁失败,", lockAcquisitionException);
             }
 
-            if(!locked){
+            if (!locked) {
                 try {
                     Thread.sleep(20);
                 } catch (InterruptedException e) {
@@ -61,7 +57,7 @@ public class DBPlanServiceImpl implements PlanService<Object> {
     @Override
     public Object lockUser(long uid, Supplier<Long> supplier) {
 
-        switch (lockPlanRecord.getCode()){
+        switch (lockPlanRecord.getCode()) {
             case "mysql-ssi":
                 break;
             case "pgsql-rr":
@@ -77,7 +73,7 @@ public class DBPlanServiceImpl implements PlanService<Object> {
 
     @Override
     public Object lockUser(Set<Long> uids, Supplier<Long> supplier) {
-        switch (lockPlanRecord.getCode()){
+        switch (lockPlanRecord.getCode()) {
             case "mysql-ssi":
                 break;
             case "pgsql-rr":
@@ -93,7 +89,7 @@ public class DBPlanServiceImpl implements PlanService<Object> {
 
     @Override
     public Object lockProduct(long pid, Supplier<Long> supplier) {
-        switch (lockPlanRecord.getCode()){
+        switch (lockPlanRecord.getCode()) {
             case "mysql-ssi":
                 break;
             case "pgsql-rr":
@@ -109,7 +105,7 @@ public class DBPlanServiceImpl implements PlanService<Object> {
 
     @Override
     public Object lockProduct(Set<Long> pids, Supplier<Long> supplier) {
-        switch (lockPlanRecord.getCode()){
+        switch (lockPlanRecord.getCode()) {
             case "mysql-ssi":
                 break;
             case "pgsql-rr":

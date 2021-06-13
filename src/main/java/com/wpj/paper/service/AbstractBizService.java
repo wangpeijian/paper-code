@@ -10,8 +10,6 @@ import com.wpj.paper.service.plan.PlanService;
 import com.wpj.paper.util.Snowflake;
 import com.wpj.paper.util.ZipfGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -20,58 +18,44 @@ import java.util.*;
 @Service
 public abstract class AbstractBizService implements BaseBizService {
 
+    @Autowired
+    BillSourceRepository billSourceRepository;
+    @Autowired
+    OrderSourceRepository orderSourceRepository;
+    @Autowired
+    RechargeSourceRepository rechargeSourceRepository;
+    @Autowired
+    AccountCashRepository accountCashRepository;
+    @Autowired
+    AccountCreditRepository accountCreditRepository;
+    @Autowired
+    ProductRepository productRepository;
+    @Autowired
+    TradeRepository tradeRepository;
+    @Autowired
+    UserRepository userRepository;
+    @Autowired
+    OrderItemRepository orderItemRepository;
+    @Autowired
+    ReloadLogRepository reloadLogRepository;
+    @Autowired
+    Snowflake snowflake;
+    @Autowired
+    ConfigData configData;
+    @Autowired
+    ZipfGenerator userZipf;
+    @Autowired
+    ZipfGenerator productZipf;
     // 保存部署该Bean时指定的id属性
     private String beanName;
-
-    public void setBeanName(String name) {
-        this.beanName = name;
-    }
 
     public String getBeanName() {
         return beanName;
     }
 
-    @Autowired
-    BillSourceRepository billSourceRepository;
-
-    @Autowired
-    OrderSourceRepository orderSourceRepository;
-
-    @Autowired
-    RechargeSourceRepository rechargeSourceRepository;
-
-    @Autowired
-    AccountCashRepository accountCashRepository;
-
-    @Autowired
-    AccountCreditRepository accountCreditRepository;
-
-    @Autowired
-    ProductRepository productRepository;
-
-    @Autowired
-    TradeRepository tradeRepository;
-
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    OrderItemRepository orderItemRepository;
-
-    @Autowired
-    ReloadLogRepository reloadLogRepository;
-
-    @Autowired
-    Snowflake snowflake;
-
-    @Autowired
-    ConfigData configData;
-
-    @Autowired
-    ZipfGenerator userZipf;
-
-    @Autowired
-    ZipfGenerator productZipf;
+    public void setBeanName(String name) {
+        this.beanName = name;
+    }
 
     public BillSource createBillSource(long userId) {
         long id = Long.parseLong(snowflake.nextId());
