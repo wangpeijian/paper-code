@@ -1,13 +1,29 @@
 spring:
     datasource:
+#        username: postgres
+#        password: 123456
+#        url: jdbc:postgresql://localhost:5432/postgres?useSSL=false
+
+        url: jdbc:postgresql://pgm-8vbcgbub6h0ygxpixo.pgsql.zhangbei.rds.aliyuncs.com:1921/paper?useSSL=false
         username: postgres
-        password: 123456
-        url: jdbc:postgresql://localhost:5432/postgres?useSSL=false
-        platform: postgres
+        password: 123qwe!@#
+        type: com.alibaba.druid.pool.DruidDataSource
         driverClassName: org.postgresql.Driver
-        tomcat:
-            max-active: 300
-            initial-size: 300
+        platform: postgres
+
+        initialSize: 20
+        minIdle: 5
+        maxActive: 20
+        maxWait: 60000
+        timeBetweenEvictionRunsMillis: 60000
+        minEvictableIdleTimeMillis: 300000
+        testWhileIdle: true
+        testOnBorrow: false
+        testOnReturn: false
+        poolPreparedStatements: true
+        maxPoolPreparedStatementPerConnectionSize: 20
+        useGlobalDataSourceStat: true
+        connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=500
 
     jpa:
         properties:

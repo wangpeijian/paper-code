@@ -60,8 +60,8 @@ public class DBPlanServiceImpl implements PlanService<Object> {
         switch (lockPlanRecord.getCode()) {
             case "mysql-ssi":
                 break;
+            case "pgsql-ssi":
             case "pgsql-rr":
-//                tryLock(100, () -> userRepository.forUpdateLock(uid));
                 break;
             default:
                 userRepository.forUpdateLock(uid);
@@ -76,8 +76,8 @@ public class DBPlanServiceImpl implements PlanService<Object> {
         switch (lockPlanRecord.getCode()) {
             case "mysql-ssi":
                 break;
+            case "pgsql-ssi":
             case "pgsql-rr":
-//                tryLock(100, () -> userRepository.forUpdateLock(uids));
                 break;
             default:
                 userRepository.forUpdateLock(uids);
@@ -92,8 +92,8 @@ public class DBPlanServiceImpl implements PlanService<Object> {
         switch (lockPlanRecord.getCode()) {
             case "mysql-ssi":
                 break;
+            case "pgsql-ssi":
             case "pgsql-rr":
-//                tryLock(100, () -> productRepository.forUpdateLock(pid));
                 break;
             default:
                 productRepository.forUpdateLock(pid);
@@ -108,8 +108,8 @@ public class DBPlanServiceImpl implements PlanService<Object> {
         switch (lockPlanRecord.getCode()) {
             case "mysql-ssi":
                 break;
+            case "pgsql-ssi":
             case "pgsql-rr":
-//                tryLock(100, () -> productRepository.forUpdateLock(pids));
                 break;
             default:
                 productRepository.forUpdateLock(pids);
