@@ -36,19 +36,22 @@ public class JavaLockPlanServiceImpl implements PlanService<Object> {
         Map<Long, Lock> lockMap = getLockMap(type);
 
         Lock lock = lockMap.computeIfAbsent(id, (Long key) -> new ReentrantLock());
-
+        List<Lock> locks = new ArrayList<>();
         try {
             if (lock.tryLock(2, TimeUnit.SECONDS)) {
+                locks.add(lock);
                 return supplier.get();
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
-            try {
-                lock.unlock();
-            } catch (Exception ignored) {
+            locks.forEach(lockItem -> {
+                try {
+                    lockItem.unlock();
+                } catch (Exception ignored) {
 
-            }
+                }
+            });
         }
 
         throw new RuntimeException(String.format("获取锁超时 type: %s , id: %s", type, id));

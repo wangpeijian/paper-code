@@ -390,11 +390,11 @@ public abstract class AbstractBizService implements BaseBizService {
                 break;
         }
 
-        try {
-            Thread.sleep(300);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            Thread.sleep(300);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
 
         return res;
     }
@@ -418,11 +418,11 @@ public abstract class AbstractBizService implements BaseBizService {
                 break;
         }
 
-        try {
-            Thread.sleep(300);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            Thread.sleep(300);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
 
         return res;
     }

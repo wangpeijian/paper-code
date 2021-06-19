@@ -1,12 +1,9 @@
 spring:
     datasource:
-#        username: postgres
-#        password: 123456
-#        url: jdbc:postgresql://localhost:5432/postgres?useSSL=false
-
-        url: jdbc:postgresql://pgm-8vbcgbub6h0ygxpixo.pgsql.zhangbei.rds.aliyuncs.com:1921/paper?useSSL=false
         username: postgres
-        password: 123qwe!@#
+        password: 123456
+        url: jdbc:postgresql://localhost:5432/postgres?useSSL=false
+
         type: com.alibaba.druid.pool.DruidDataSource
         driverClassName: org.postgresql.Driver
         platform: postgres
@@ -17,6 +14,7 @@ spring:
         maxWait: 60000
         timeBetweenEvictionRunsMillis: 60000
         minEvictableIdleTimeMillis: 300000
+        validationQuery: select version()
         testWhileIdle: true
         testOnBorrow: false
         testOnReturn: false

@@ -2,11 +2,11 @@ package com.wpj.paper.service.plan;
 
 import com.alibaba.fastjson.JSON;
 import com.wpj.paper.util.RedisUtil;
-import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Supplier;
@@ -22,7 +22,7 @@ public class RedisPlanServiceImpl implements PlanService<Object> {
     private Object lock(String lockPrefix, long uid, Supplier<Long> supplier) {
         String lockName = String.format("%s-lock-%s", lockPrefix, uid);
 
-        Pair<Boolean, Long> pair = redisUtil.tryLock(lockName, 2000, 10000, supplier);
+        Map.Entry<Boolean, Long> pair = redisUtil.tryLock(lockName, 2000, 10000, supplier);
         if (pair.getKey()) {
             return pair.getValue();
         }
@@ -40,7 +40,7 @@ public class RedisPlanServiceImpl implements PlanService<Object> {
 
         String lockNames = JSON.toJSONString(lockSet);
 
-        Pair<Boolean, Long> pair = redisUtil.tryLock(lockSet, 2000, 10000, supplier);
+        Map.Entry<Boolean, Long> pair = redisUtil.tryLock(lockSet, 2000, 10000, supplier);
         if (pair.getKey()) {
             return pair.getValue();
         }

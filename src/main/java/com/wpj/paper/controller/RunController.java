@@ -14,9 +14,13 @@ import com.wpj.paper.util.Snowflake;
 import com.wpj.paper.util.ZipfGenerator;
 import com.wpj.paper.vo.Result;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.exception.LockAcquisitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.CannotAcquireLockException;
+import org.springframework.dao.CannotSerializeTransactionException;
+import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
+import java.util.function.Supplier;
 
 @Slf4j
 @RestController
@@ -147,12 +152,12 @@ public class RunController {
         switch (type) {
             case 1:
                 userId = userZipf.next();
-                // 执行实际业务
-                return service.packageBill(userId, planService);
+                // 执行包费购买
+                return doTask(5000, () -> service.packageBill(userId, planService));
             case 2:
                 userId = userZipf.next();
-                // 执行实际业务
-                return service.usageBill(userId, planService);
+                // 执行按量销账
+                return doTask(5000, () -> service.usageBill(userId, planService));
             case 3:
                 // 执行随机查询业务
                 return service.searchOrder();
@@ -161,20 +166,46 @@ public class RunController {
                 while (uIds.size() < configData.getBatchSize()) {
                     uIds.add((long) userZipf.next());
                 }
-
-                // 执行实际业务-账户充值
-                return service.recharge(uIds, planService);
+                // 执行账户充值
+                return doTask(5000, () -> service.recharge(uIds, planService));
             case 5:
                 Set<Long> pIds = productRepository.findInsufficient();
-
-                // 执行实际业务-商品补货
-                return service.reload(pIds, planService);
+                // 执行库存补货
+                return doTask(5000, () -> service.reload(pIds, planService));
             case 6:
                 // 执行随机查询业务
                 return service.searchStock();
         }
 
         return "error";
+    }
+
+    private Object doTask(long timeout, Supplier<Object> supplier) {
+        long endTime = System.currentTimeMillis() + timeout;
+
+        do {
+            // 超时
+            if (System.currentTimeMillis() + 20 >= endTime) {
+                return null;
+            }
+
+            try {
+                return supplier.get();
+            } catch (CannotAcquireLockException | CannotSerializeTransactionException | LockAcquisitionException | JpaSystemException e) {
+                if (e.getClass().equals(CannotAcquireLockException.class)) {
+                    log.error("pgsql 事务并发失败重试操作");
+                } else {
+                    log.error("pgsql ssi事务串行化失败重试操作");
+                }
+
+                try {
+                    Thread.sleep(20);
+                } catch (InterruptedException interruptedException) {
+                    interruptedException.printStackTrace();
+                }
+            }
+
+        } while (true);
     }
 
 }

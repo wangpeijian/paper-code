@@ -1,12 +1,10 @@
 server:
-    port: 8080
+    port: 80
 
 spring:
     redis:
-        #        host: localhost
         host: r-el58c6fd73430944.redis.pcloud.citic.com
         password: r-el58c6fd73430944:AliOS1688
-        database: 13
     redisson:
         enable: true
         singleServerConfig:

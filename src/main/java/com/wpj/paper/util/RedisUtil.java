@@ -1,6 +1,5 @@
 package com.wpj.paper.util;
 
-import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -15,40 +14,9 @@ import java.util.function.Supplier;
 @Component
 public class RedisUtil {
 
-
     @Autowired
     StringRedisTemplate redisTemplate;
 
-    void setKey(String key, String value, long timeout) {
-        redisTemplate.opsForValue().set(key, value, timeout, TimeUnit.SECONDS);
-    }
-
-    String getKey(String key) {
-        return redisTemplate.opsForValue().get(key);
-    }
-
-    public <T> Pair<Boolean, T> lockAction(String lockName, long time, Supplier<T> supplier) {
-        String identity = UUID.randomUUID().toString();
-
-        // 上锁
-        Boolean locked = lock(lockName, identity, time);
-
-        if (locked) {
-
-            try {
-                // 执行操作
-                return new Pair<>(true, supplier.get());
-            } finally {
-                // 解锁
-                unlock(lockName, identity);
-            }
-
-        } else {
-            // 上锁失败
-            return new Pair<>(false, null);
-        }
-
-    }
 
     Boolean lock(String lockName, String identity, long time) {
         return redisTemplate.opsForValue().setIfAbsent(lockName, identity, time, TimeUnit.SECONDS);
@@ -62,11 +30,11 @@ public class RedisUtil {
         return Long.valueOf(1).equals(result);
     }
 
-    public <T> Pair<Boolean, T> tryLock(String lockName, long timeout, long expireTime, Supplier<T> supplier) {
+    public <T> Map.Entry<Boolean, T> tryLock(String lockName, long timeout, long expireTime, Supplier<T> supplier) {
         return tryLock(Collections.singleton(lockName), timeout, expireTime, supplier);
     }
 
-    public <T> Pair<Boolean, T> tryLock(Set<String> lockNames, long timeout, long expireTime, Supplier<T> supplier) {
+    public <T> Map.Entry<Boolean, T> tryLock(Set<String> lockNames, long timeout, long expireTime, Supplier<T> supplier) {
         long endTime = System.currentTimeMillis() + timeout;
 
         Map<String, String> lockIdentity = new HashMap<>();
@@ -78,7 +46,7 @@ public class RedisUtil {
                 do {
                     // 超时
                     if (System.currentTimeMillis() + 20 >= endTime) {
-                        return new Pair<>(false, null);
+                        return new AbstractMap.SimpleEntry<>(false, null);
                     }
 
                     locked = lock(lockName, identity, expireTime);
@@ -98,7 +66,7 @@ public class RedisUtil {
             }
 
             // 执行操作
-            return new Pair<>(true, supplier.get());
+            return new AbstractMap.SimpleEntry<>(true, supplier.get());
         } finally {
             // 解锁
             lockIdentity.forEach(this::unlock);
