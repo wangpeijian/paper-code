@@ -19,6 +19,7 @@ public class BillSource {
     private Long amount;
     private Long statusCode;
     private Long billId;
+
     public BillSource(Long id, Long userId, Long amount, Long billId) {
         this.id = id;
         this.userId = userId;

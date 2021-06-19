@@ -12,6 +12,7 @@ public class RechargeResult extends ConsumeResult {
     private long cash;
     private long credit;
     private long debt;
+
     public RechargeResult(long cash, long debt) {
         super();
         this.cash = cash;

@@ -1,10 +1,10 @@
 package com.wpj.paper.controller;
 
 import com.wpj.paper.config.ConfigData;
-import com.wpj.paper.dao.repo.BillSourceRepository;
-import com.wpj.paper.dao.repo.OrderSourceRepository;
-import com.wpj.paper.dao.repo.ProductRepository;
-import com.wpj.paper.dao.repo.RechargeSourceRepository;
+import com.wpj.paper.dao.repo.normal.BillSourceRepository;
+import com.wpj.paper.dao.repo.normal.OrderSourceRepository;
+import com.wpj.paper.dao.repo.normal.ProductRepository;
+import com.wpj.paper.dao.repo.normal.RechargeSourceRepository;
 import com.wpj.paper.exception.BizException;
 import com.wpj.paper.service.BaseBizService;
 import com.wpj.paper.service.plan.PlanService;
@@ -181,31 +181,36 @@ public class RunController {
     }
 
     private Object doTask(long timeout, Supplier<Object> supplier) {
-        long endTime = System.currentTimeMillis() + timeout;
 
-        do {
-            // 超时
-            if (System.currentTimeMillis() + 20 >= endTime) {
-                return null;
-            }
+        if(lockPlanRecord.getCode().startsWith("pgsql")){
+            long endTime = System.currentTimeMillis() + timeout;
 
-            try {
-                return supplier.get();
-            } catch (CannotAcquireLockException | CannotSerializeTransactionException | LockAcquisitionException | JpaSystemException e) {
-                if (e.getClass().equals(CannotAcquireLockException.class)) {
-                    log.error("pgsql 事务并发失败重试操作");
-                } else {
-                    log.error("pgsql ssi事务串行化失败重试操作");
+            do {
+                // 超时
+                if (System.currentTimeMillis() + 20 >= endTime) {
+                    return null;
                 }
 
                 try {
-                    Thread.sleep(20);
-                } catch (InterruptedException interruptedException) {
-                    interruptedException.printStackTrace();
-                }
-            }
+                    return supplier.get();
+                } catch (CannotAcquireLockException | CannotSerializeTransactionException | LockAcquisitionException | JpaSystemException e) {
+                    if (e.getClass().equals(CannotAcquireLockException.class)) {
+                        log.error("pgsql 事务并发失败重试操作", e);
+                    } else {
+                        log.error("pgsql ssi事务串行化失败重试操作", e);
+                    }
 
-        } while (true);
+                    try {
+                        Thread.sleep(20);
+                    } catch (InterruptedException interruptedException) {
+                        interruptedException.printStackTrace();
+                    }
+                }
+
+            } while (true);
+        }else {
+            return supplier.get();
+        }
     }
 
 }

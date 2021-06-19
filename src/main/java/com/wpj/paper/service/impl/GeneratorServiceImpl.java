@@ -1,7 +1,7 @@
 package com.wpj.paper.service.impl;
 
 import com.wpj.paper.dao.entity.Product;
-import com.wpj.paper.dao.repo.ProductRepository;
+import com.wpj.paper.dao.repo.normal.ProductRepository;
 import com.wpj.paper.service.GeneratorService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,6 +1,7 @@
-package com.wpj.paper.dao.repo;
+package com.wpj.paper.dao.repo.ms;
 
 import com.wpj.paper.dao.entity.ReloadLog;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -8,7 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 import java.util.Set;
 
-public interface ReloadLogRepository extends JpaRepository<ReloadLog, Long> {
+@ConditionalOnExpression("'${spring.profiles.active}'=='mssql'")
+public interface ReloadLogRepository extends com.wpj.paper.dao.repo.normal.ReloadLogRepository {
 
     @Modifying()
     @Query(value = "insert into reload_log(id, product_id, num) values(:#{#reloadLog.id}, :#{#reloadLog.productId},   :#{#reloadLog.num})", nativeQuery = true)
@@ -18,6 +20,6 @@ public interface ReloadLogRepository extends JpaRepository<ReloadLog, Long> {
     @Query(value = "delete from reload_log", nativeQuery = true)
     int clear();
 
-    @Query(value = "select * from reload_log where product_id in (:pIds) limit 100 for update", nativeQuery = true)
+    @Query(value = "select top 100 * from reload_log with (UPDLOCK) where product_id in (:pIds)", nativeQuery = true)
     List<?> findForUpdate(Set<Long> pIds);
 }

@@ -1,6 +1,7 @@
-package com.wpj.paper.dao.repo;
+package com.wpj.paper.dao.repo.ms;
 
 import com.wpj.paper.dao.entity.OrderSource;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -8,7 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 import java.util.Set;
 
-public interface OrderSourceRepository extends JpaRepository<OrderSource, Long> {
+@ConditionalOnExpression("'${spring.profiles.active}'=='mssql'")
+public interface OrderSourceRepository extends com.wpj.paper.dao.repo.normal.OrderSourceRepository {
 
     @Modifying()
     @Query(value = "insert into order_source(id, order_id, price, status_code, user_id) values(:#{#orderSource.id}, :#{#orderSource.orderId}, :#{#orderSource.price}, :#{#orderSource.statusCode}, :#{#orderSource.userId})", nativeQuery = true)
@@ -22,6 +24,6 @@ public interface OrderSourceRepository extends JpaRepository<OrderSource, Long> 
     @Query(value = "delete from order_source", nativeQuery = true)
     int clear();
 
-    @Query(value = "select * from order_source where user_id in (:uIds) limit 100 for update", nativeQuery = true)
+    @Query(value = "select top 100 * from order_source with (UPDLOCK) where user_id in (:uIds)", nativeQuery = true)
     List<OrderSource> findForUpdate(Set<Long> uIds);
 }

@@ -19,6 +19,7 @@ public class OrderSource {
     private Long userId;
     private Long price;
     private Long statusCode;
+
     public OrderSource(Long id, Long userId, Long orderId, Long price) {
         this.id = id;
         this.userId = userId;

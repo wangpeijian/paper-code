@@ -1,8 +1,27 @@
 spring:
     datasource:
-        username: root
-        password: 123456
-        url: jdbc:mysql://localhost:3306/paper?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&failOverReadOnly=false
+        username: sa
+        password: Winter2019
+        url: jdbc:sqlserver://localhost:1433;DatabaseName=paper
+
+        type: com.alibaba.druid.pool.DruidDataSource
+        driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+
+        initialSize: 1
+        minIdle: 5
+        maxActive: 20
+        maxWait: 60000
+        timeBetweenEvictionRunsMillis: 60000
+        minEvictableIdleTimeMillis: 300000
+        validationQuery: select 1
+        testWhileIdle: true
+        testOnBorrow: false
+        testOnReturn: false
+        poolPreparedStatements: true
+        maxPoolPreparedStatementPerConnectionSize: 20
+        useGlobalDataSourceStat: true
+        connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=500
+
 isolation:
     ssi: MsSsi
     rr: MsRr

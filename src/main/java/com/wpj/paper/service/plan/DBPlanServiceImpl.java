@@ -1,11 +1,10 @@
 package com.wpj.paper.service.plan;
 
-import com.wpj.paper.dao.repo.ProductRepository;
-import com.wpj.paper.dao.repo.UserRepository;
+import com.wpj.paper.dao.repo.normal.ProductRepository;
+import com.wpj.paper.dao.repo.normal.UserRepository;
 import com.wpj.paper.util.LockPlanRecord;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
@@ -33,6 +32,8 @@ public class DBPlanServiceImpl implements PlanService<Object> {
             case "pgsql-ssi":
             case "pgsql-rr":
                 break;
+            case "mssql-ssi":
+                break;
             default:
                 userRepository.forUpdateLock(uid);
                 break;
@@ -48,6 +49,8 @@ public class DBPlanServiceImpl implements PlanService<Object> {
                 break;
             case "pgsql-ssi":
             case "pgsql-rr":
+                break;
+            case "mssql-ssi":
                 break;
             default:
                 userRepository.forUpdateLock(uids);
@@ -65,6 +68,8 @@ public class DBPlanServiceImpl implements PlanService<Object> {
             case "pgsql-ssi":
             case "pgsql-rr":
                 break;
+            case "mssql-ssi":
+                break;
             default:
                 productRepository.forUpdateLock(pid);
                 break;
@@ -80,6 +85,8 @@ public class DBPlanServiceImpl implements PlanService<Object> {
                 break;
             case "pgsql-ssi":
             case "pgsql-rr":
+                break;
+            case "mssql-ssi":
                 break;
             default:
                 productRepository.forUpdateLock(pids);

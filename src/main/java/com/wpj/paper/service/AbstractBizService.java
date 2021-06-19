@@ -2,7 +2,7 @@ package com.wpj.paper.service;
 
 import com.wpj.paper.config.ConfigData;
 import com.wpj.paper.dao.entity.*;
-import com.wpj.paper.dao.repo.*;
+import com.wpj.paper.dao.repo.normal.*;
 import com.wpj.paper.exception.BizException;
 import com.wpj.paper.service.model.ConsumeResult;
 import com.wpj.paper.service.model.RechargeResult;

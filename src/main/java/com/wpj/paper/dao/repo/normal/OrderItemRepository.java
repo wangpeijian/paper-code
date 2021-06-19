@@ -1,6 +1,7 @@
-package com.wpj.paper.dao.repo;
+package com.wpj.paper.dao.repo.normal;
 
 import com.wpj.paper.dao.entity.OrderItem;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -8,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 import java.util.Set;
 
+@ConditionalOnExpression("'${spring.profiles.active}'!='mssql'")
 public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
 
     @Modifying()

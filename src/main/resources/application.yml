@@ -3,8 +3,8 @@ server:
 
 spring:
     redis:
-        host: r-el58c6fd73430944.redis.pcloud.citic.com
-        password: r-el58c6fd73430944:AliOS1688
+        host: localhost
+        password:
     redisson:
         enable: true
         singleServerConfig:

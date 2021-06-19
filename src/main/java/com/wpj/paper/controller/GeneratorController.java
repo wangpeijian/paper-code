@@ -5,7 +5,7 @@ import com.wpj.paper.config.RunnerConfig;
 import com.wpj.paper.dao.entity.AccountCash;
 import com.wpj.paper.dao.entity.AccountCredit;
 import com.wpj.paper.dao.entity.UserInfo;
-import com.wpj.paper.dao.repo.*;
+import com.wpj.paper.dao.repo.normal.*;
 import com.wpj.paper.service.GeneratorService;
 import com.wpj.paper.util.ZipfGenerator;
 import com.wpj.paper.vo.Result;

@@ -11,6 +11,7 @@ public class ConsumeResult {
     private long cash;
     private long credit;
     private long debt;
+
     public ConsumeResult() {
 
     }

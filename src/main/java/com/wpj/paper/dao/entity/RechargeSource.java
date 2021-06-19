@@ -19,6 +19,7 @@ public class RechargeSource {
     private Long amount;
     private Long rechargeId;
     private Long statusCode;
+
     public RechargeSource(Long id, Long userId, Long amount, Long rechargeId) {
         this.id = id;
         this.userId = userId;
