@@ -3,8 +3,9 @@ server:
 
 spring:
     redis:
-        host: localhost
-        password:
+#        host: localhost
+        host: r-2zettfgw1p2mcow21h.redis.rds.aliyuncs.com
+        password: 123qwe!@#
     redisson:
         enable: true
         singleServerConfig:

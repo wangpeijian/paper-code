@@ -153,11 +153,11 @@ public class RunController {
             case 1:
                 userId = userZipf.next();
                 // 执行包费购买
-                return doTask(5000, () -> service.packageBill(userId, planService));
+                return doTask(2000, () -> service.packageBill(userId, planService));
             case 2:
                 userId = userZipf.next();
                 // 执行按量销账
-                return doTask(5000, () -> service.usageBill(userId, planService));
+                return doTask(2000, () -> service.usageBill(userId, planService));
             case 3:
                 // 执行随机查询业务
                 return service.searchOrder();
@@ -167,11 +167,11 @@ public class RunController {
                     uIds.add((long) userZipf.next());
                 }
                 // 执行账户充值
-                return doTask(5000, () -> service.recharge(uIds, planService));
+                return doTask(2000, () -> service.recharge(uIds, planService));
             case 5:
                 Set<Long> pIds = productRepository.findInsufficient();
                 // 执行库存补货
-                return doTask(5000, () -> service.reload(pIds, planService));
+                return doTask(2000, () -> service.reload(pIds, planService));
             case 6:
                 // 执行随机查询业务
                 return service.searchStock();
@@ -188,7 +188,7 @@ public class RunController {
             do {
                 // 超时
                 if (System.currentTimeMillis() + 20 >= endTime) {
-                    return null;
+                    throw new RuntimeException("串行化重试超时");
                 }
 
                 try {
