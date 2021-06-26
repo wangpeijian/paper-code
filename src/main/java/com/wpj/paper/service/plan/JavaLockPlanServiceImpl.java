@@ -64,7 +64,14 @@ public class JavaLockPlanServiceImpl implements PlanService<Object> {
 
         List<Lock> locks = new ArrayList<>();
         try {
+            long endTime = System.currentTimeMillis() + 2000;
+
             for (Long tid : tids) {
+                // 超时
+                if (System.currentTimeMillis() + 20 >= endTime) {
+                    throw new RuntimeException(String.format("获取锁超时 type: %s , id: %s", type, tid));
+                }
+
                 Lock lock = lockMap.computeIfAbsent(tid, (Long key) -> new ReentrantLock());
 
                 if (lock.tryLock(2, TimeUnit.SECONDS)) {
