@@ -42,12 +42,12 @@ public class ZipfGenerator implements Serializable {
             if (i < 10 || i > 999990) {
                 ArrayList<Object> point = new ArrayList<>();
                 point.add(i);
-                point.add(p);
+                point.add(p* 100);
                 arr.add(point);
             } else if (random.nextDouble() < 0.001) {
                 ArrayList<Object> point = new ArrayList<>();
                 point.add(i);
-                point.add(p);
+                point.add(p* 100);
                 arr.add(point);
             }
 
@@ -65,7 +65,7 @@ public class ZipfGenerator implements Serializable {
     }
 
     public static void main(String[] args) {
-        ZipfGenerator zipf = new ZipfGenerator(100 * 10000, 1.1);
+        ZipfGenerator zipf = new ZipfGenerator(100 * 10000, 1.5);
         log.info(zipf.print());
     }
 

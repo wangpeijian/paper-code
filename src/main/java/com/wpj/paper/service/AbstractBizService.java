@@ -9,12 +9,14 @@ import com.wpj.paper.service.model.RechargeResult;
 import com.wpj.paper.service.plan.PlanService;
 import com.wpj.paper.util.Snowflake;
 import com.wpj.paper.util.ZipfGenerator;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.*;
 
+@Slf4j
 @Service
 public abstract class AbstractBizService implements BaseBizService {
 
@@ -235,11 +237,15 @@ public abstract class AbstractBizService implements BaseBizService {
     /**
      * 账户充值
      *
-     * @param userIds
      * @param planService
      * @return
      */
-    public Object doRecharge(Set<Long> userIds, PlanService<?> planService) {
+    public Object doRecharge(PlanService<?> planService) {
+        Set<Long> userIds = new HashSet<>();
+        while (userIds.size() < configData.getBatchSize()) {
+            userIds.add((long) userZipf.next());
+        }
+
         return planService.lockUser(userIds, () -> {
             userIds.forEach(this::doRecharge);
             return 1L;
@@ -259,11 +265,12 @@ public abstract class AbstractBizService implements BaseBizService {
     /**
      * 商品库存补货
      *
-     * @param pIds
      * @param planService
      * @return
      */
-    public Object doReload(Set<Long> pIds, PlanService<?> planService) {
+    public Object doReload(PlanService<?> planService) {
+        Set<Long> pIds = productRepository.findInsufficient();
+
         return planService.lockProduct(pIds, () -> {
             pIds.forEach(this::doReload);
             return 1L;

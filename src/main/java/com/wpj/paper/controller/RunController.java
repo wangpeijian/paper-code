@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -162,16 +161,11 @@ public class RunController {
                 // 执行随机查询业务
                 return service.searchOrder();
             case 4:
-                Set<Long> uIds = new HashSet<>();
-                while (uIds.size() < configData.getBatchSize()) {
-                    uIds.add((long) userZipf.next());
-                }
                 // 执行账户充值
-                return doTask(2000, () -> service.recharge(uIds, planService));
+                return doTask(2000, () -> service.recharge(planService));
             case 5:
-                Set<Long> pIds = productRepository.findInsufficient();
                 // 执行库存补货
-                return doTask(2000, () -> service.reload(pIds, planService));
+                return doTask(2000, () -> service.reload(planService));
             case 6:
                 // 执行随机查询业务
                 return service.searchStock();

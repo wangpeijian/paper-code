@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Set;
 
 @Transactional(rollbackFor = Exception.class, isolation = Isolation.REPEATABLE_READ)
 @Service("MyRr")
@@ -23,8 +22,8 @@ public class MyRrServiceImpl extends AbstractBizService {
     }
 
     @Override
-    public Object recharge(Set<Long> userIds, PlanService<?> planService) {
-        return doRecharge(userIds, planService);
+    public Object recharge(PlanService<?> planService) {
+        return doRecharge(planService);
     }
 
     @Override
@@ -39,7 +38,7 @@ public class MyRrServiceImpl extends AbstractBizService {
 
 
     @Override
-    public Object reload(Set<Long> pIds, PlanService<?> planService) {
-        return doReload(pIds, planService);
+    public Object reload(PlanService<?> planService) {
+        return doReload(planService);
     }
 }

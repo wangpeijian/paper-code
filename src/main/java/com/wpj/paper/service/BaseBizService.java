@@ -4,7 +4,6 @@ import com.wpj.paper.service.plan.PlanService;
 import org.springframework.beans.factory.BeanNameAware;
 
 import java.util.List;
-import java.util.Set;
 
 public interface BaseBizService extends BeanNameAware {
 
@@ -14,11 +13,11 @@ public interface BaseBizService extends BeanNameAware {
 
     Object packageBill(long userId, PlanService<?> planService);
 
-    Object recharge(Set<Long> userIds, PlanService<?> planService);
-
     List<?> searchOrder();
 
     List<?> searchStock();
 
-    Object reload(Set<Long> ids, PlanService<?> planService);
+    Object recharge(PlanService<?> planService);
+
+    Object reload(PlanService<?> planService);
 }
