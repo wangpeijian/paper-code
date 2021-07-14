@@ -1,12 +1,12 @@
 spring:
     datasource:
-#        username: postgres
-#        password: 123456
-#        url: jdbc:postgresql://localhost:5432/postgres?useSSL=false
-
         username: postgres
-        password: 123qwe!@#
-        url: jdbc:postgresql://pgm-2zevo01477dpzl27168220.pg.rds.aliyuncs.com:1921/paper?useSSL=false
+        password: 123456
+        url: jdbc:postgresql://localhost:5432/postgres?useSSL=false
+
+#        username: postgres
+#        password: 123qwe!@#
+#        url: jdbc:postgresql://pgm-2zey5lmsiqce5vy7168220.pg.rds.aliyuncs.com:1921/paper?useSSL=false
 
         type: com.alibaba.druid.pool.DruidDataSource
         driverClassName: org.postgresql.Driver

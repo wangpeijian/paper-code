@@ -25,7 +25,7 @@ option = {
     },
     yAxis: {
         type: 'value',
-        min: 0,
+        min: 20,
         max: 100,
         name: '吞吐量(qps)'
     },

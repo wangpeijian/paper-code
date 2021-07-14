@@ -1,12 +1,12 @@
 spring:
     datasource:
-#        username: sa
-#        password: Winter2019
-#        url: jdbc:sqlserver://localhost:1433;DatabaseName=paper
+        username: sa
+        password: Winter2019
+        url: jdbc:sqlserver://localhost:1433;DatabaseName=paper
 
-        username: mssql
-        password: 123qwe!@#
-        url: jdbc:sqlserver://rm-2zegpe8jy48ykdwy9.sqlserver.rds.aliyuncs.com:3433;DatabaseName=paper
+#        username: mssql
+#        password: 123qwe!@#
+#        url: jdbc:sqlserver://rm-2zeewu126gdi11xj3.sqlserver.rds.aliyuncs.com:3433;DatabaseName=paper
 
         type: com.alibaba.druid.pool.DruidDataSource
         driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver

@@ -1,5 +1,5 @@
 option = {
-    color: ["#333", "#e01f54", '#e87c25',  '#3fb1e3', '#6be6c1'],
+    color: ["#333", "#e01f54", '#fcce10',  '#3fb1e3', '#c4ebad'],
     title: {
         text: 'pgsql-100并发'
     },
@@ -25,7 +25,7 @@ option = {
     },
     yAxis: {
         type: 'value',
-        min: 0,
+        min: 20,
         max: 100,
         name: '吞吐量(qps)'
     },
