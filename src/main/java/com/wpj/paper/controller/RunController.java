@@ -176,7 +176,7 @@ public class RunController {
 
     private Object doTask(long timeout, Supplier<Object> supplier) {
 
-        if(lockPlanRecord.getCode().startsWith("pgsql")){
+        if(lockPlanRecord.getCode().startsWith("pgsql") || lockPlanRecord.getCode().startsWith("mysql")){
             long endTime = System.currentTimeMillis() + timeout;
 
             do {

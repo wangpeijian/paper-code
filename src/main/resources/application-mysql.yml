@@ -1,12 +1,12 @@
 spring:
     datasource:
-#        username: dba
-#        password: 123qwe!@#
-#        url: jdbc:mysql://rm-2ze61i90650npe6gf.mysql.rds.aliyuncs.com:3306/paper?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&failOverReadOnly=false
+        username: dba
+        password: 123qwe!@#
+        url: jdbc:mysql://rm-2ze1ci71gtq456oyj.mysql.rds.aliyuncs.com:3306/paper?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&failOverReadOnly=false
 
-        username: root
-        password: 123456
-        url: jdbc:mysql://localhost:3306/paper?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&failOverReadOnly=false
+#        username: root
+#        password: 123456
+#        url: jdbc:mysql://localhost:3306/paper?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&failOverReadOnly=false
 
 
         type: com.alibaba.druid.pool.DruidDataSource
