@@ -162,10 +162,12 @@ public class RunController {
                 return service.searchOrder();
             case 4:
                 // 执行账户充值
-                return doTask(2000, () -> service.recharge(planService));
+                return service.recharge(planService);
+//                return doTask(2000, () -> service.recharge(planService));
             case 5:
                 // 执行库存补货
-                return doTask(2000, () -> service.reload(planService));
+                return service.reload(planService);
+//                return doTask(2000, () -> service.reload(planService));
             case 6:
                 // 执行随机查询业务
                 return service.searchStock();
@@ -181,8 +183,8 @@ public class RunController {
 
             do {
                 // 超时
-                if (System.currentTimeMillis() + 20 >= endTime) {
-                    throw new RuntimeException("串行化重试超时");
+                if (System.currentTimeMillis() > endTime) {
+                    throw new RuntimeException("串行化重试超时" + ";endTime=" + endTime + ";currentTime=" + System.currentTimeMillis());
                 }
 
                 try {
@@ -197,7 +199,7 @@ public class RunController {
                     try {
                         Thread.sleep(20);
                     } catch (InterruptedException interruptedException) {
-                        interruptedException.printStackTrace();
+                        log.error("自旋等待失败");
                     }
                 }
 

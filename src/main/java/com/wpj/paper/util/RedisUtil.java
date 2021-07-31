@@ -1,5 +1,6 @@
 package com.wpj.paper.util;
 
+import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -17,9 +18,12 @@ public class RedisUtil {
     @Autowired
     StringRedisTemplate redisTemplate;
 
+    @Autowired
+    LockPlanRecord lockPlanRecord;
+
 
     Boolean lock(String lockName, String identity, long time) {
-        return redisTemplate.opsForValue().setIfAbsent(lockName, identity, time, TimeUnit.SECONDS);
+        return redisTemplate.opsForValue().setIfAbsent(lockName, identity, time, TimeUnit.MILLISECONDS);
     }
 
     public Boolean unlock(String lockName, String identity) {
@@ -65,11 +69,16 @@ public class RedisUtil {
                 } while (!locked);
             }
 
+            log.info("获取锁全部成功了: {}", JSON.toJSONString(lockNames));
+
             // 执行操作
             return new AbstractMap.SimpleEntry<>(true, supplier.get());
         } finally {
             // 解锁
             lockIdentity.forEach(this::unlock);
+            if(lockIdentity.keySet().size() == lockNames.size()){
+                log.info("释放锁全部成功了: {}", JSON.toJSONString(lockNames));
+            }
         }
 
     }

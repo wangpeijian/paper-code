@@ -40,7 +40,7 @@ public class BeanConfiguration {
 
     @Bean
     public ZipfGenerator userZipf() {
-        return new ZipfGenerator((int) configData.getUserMax(), 0.9);
+        return new ZipfGenerator((int) configData.getUserMax(), 0.5);
     }
 
     @Bean

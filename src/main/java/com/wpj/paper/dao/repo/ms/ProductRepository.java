@@ -2,7 +2,6 @@ package com.wpj.paper.dao.repo.ms;
 
 import com.wpj.paper.dao.entity.Product;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
@@ -20,8 +19,8 @@ public interface ProductRepository extends com.wpj.paper.dao.repo.normal.Product
     @Query(value = "UPDATE product SET stock = stock - :num where id = :serviceId and stock >= :num", nativeQuery = true)
     int deductStock(Long serviceId, Long num);
 
-    @Query(value = "select top 10 id from product order by stock ASC", nativeQuery = true)
-    Set<Long> findInsufficient();
+    @Query(value = "select top :batchSize id from product order by stock ASC", nativeQuery = true)
+    Set<Long> findInsufficient(int batchSize);
 
     @Query(value = "select * from product with (UPDLOCK) where id = :pid", nativeQuery = true)
     Product forUpdateLock(long pid);

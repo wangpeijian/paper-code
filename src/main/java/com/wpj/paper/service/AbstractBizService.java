@@ -95,7 +95,7 @@ public abstract class AbstractBizService implements BaseBizService {
      * @param products
      * @return
      */
-    public List<OrderItem> createOrderItems(OrderSource orderSource, HashMap<Long, Integer> products) {
+    public List<OrderItem> createOrderItems(OrderSource orderSource, TreeMap<Long, Integer> products) {
         List<OrderItem> orderItems = new ArrayList<>();
 
         products.forEach((key, value) -> {
@@ -128,9 +128,9 @@ public abstract class AbstractBizService implements BaseBizService {
 
         return planService.lockUser(userId, () -> {
 
-            HashMap<Long, Integer> products = new HashMap<>();
+            TreeMap<Long, Integer> products = new TreeMap<>();
 
-            for (int i = 0; i < new Random().nextInt(10) + 1; i++) {
+            for (int i = 0; i < new Random().nextInt(configData.getBatchSize()) + 1; i++) {
                 Long pid = (long) productZipf.next();
                 Integer num = Optional.ofNullable(products.get(pid)).orElse(0);
                 products.put(pid, ++num);
@@ -241,7 +241,7 @@ public abstract class AbstractBizService implements BaseBizService {
      * @return
      */
     public Object doRecharge(PlanService<?> planService) {
-        Set<Long> userIds = new HashSet<>();
+        Set<Long> userIds = new TreeSet<>();
         while (userIds.size() < configData.getBatchSize()) {
             userIds.add((long) userZipf.next());
         }
@@ -269,7 +269,7 @@ public abstract class AbstractBizService implements BaseBizService {
      * @return
      */
     public Object doReload(PlanService<?> planService) {
-        Set<Long> pIds = productRepository.findInsufficient();
+        Set<Long> pIds = new TreeSet<>(productRepository.findInsufficient(configData.getBatchSize()));
 
         return planService.lockProduct(pIds, () -> {
             pIds.forEach(this::doReload);
@@ -398,7 +398,7 @@ public abstract class AbstractBizService implements BaseBizService {
         }
 
 //        try {
-//            Thread.sleep(300);
+//            Thread.sleep(100);
 //        } catch (InterruptedException e) {
 //            e.printStackTrace();
 //        }
@@ -426,7 +426,7 @@ public abstract class AbstractBizService implements BaseBizService {
         }
 
 //        try {
-//            Thread.sleep(300);
+//            Thread.sleep(100);
 //        } catch (InterruptedException e) {
 //            e.printStackTrace();
 //        }
