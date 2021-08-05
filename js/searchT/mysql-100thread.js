@@ -2,7 +2,8 @@ option = {
     color: ["#333", "#e01f54", '#e87c25', '#fcce10', '#3fb1e3', '#6be6c1', '#c4ebad'],
 
     title: {
-        text: 'mysql-100并发'
+        text: 'MySQL测试读事务对吞吐量的影响',
+        left: 'center',
     },
 
     tooltip: {
@@ -10,7 +11,8 @@ option = {
     },
 
     legend: {
-        data: ['ssi', 'redis_rr', 'redis_rc', 'redis_ru', 'java_rr', 'java_rc', 'java_ru']
+        top: ' 5%',
+        data: ['s', 'redis_rr', 'redis_rc', 'redis_ru', 'java_rr', 'java_rc', 'java_ru']
     },
 
     grid: {
@@ -36,7 +38,7 @@ option = {
 
     series: [
         {
-            name: 'ssi',
+            name: 's',
             type: 'line',
             data: [100.983894,95.43096, 79.05632, 60.4469]
         },

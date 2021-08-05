@@ -2,7 +2,8 @@ option = {
     color: ["#333", "#e01f54", '#e87c25', '#fcce10', '#3fb1e3', '#6be6c1', '#c4ebad'],
 
     title: {
-        text: 'mysql-100并发'
+        text: 'MySQL事务不同冲突系数的吞吐量趋势',
+        left: 'center',
     },
 
     tooltip: {
@@ -10,7 +11,8 @@ option = {
     },
 
     legend: {
-        data: ['ssi', 'redis_rr', 'redis_rc', 'redis_ru', 'java_rr', 'java_rc', 'java_ru']
+        top: ' 5%',
+        data: ['s', 'redis_rr', 'redis_rc', 'redis_ru', 'java_rr', 'java_rc', 'java_ru']
     },
 
     grid: {
@@ -36,9 +38,9 @@ option = {
 
     series: [
         {
-            name: 'ssi',
+            name: 's',
             type: 'line',
-            data: [133.947,120.74034, 95.43096, 63.09925, 51.62833]
+            data: [133.947, 120.74034, 95.43096, 63.09925, 51.62833]
         },
         {
             name: 'redis_rr',

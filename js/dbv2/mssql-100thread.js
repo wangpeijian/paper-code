@@ -1,13 +1,17 @@
 option = {
     color: ["#333", "#e01f54", '#e87c25', '#fcce10', '#3fb1e3', '#6be6c1', '#c4ebad'],
     title: {
-        text: 'mssql-100并发'
+        text: 'SQL Server事务不同冲突系数的吞吐量趋势',
+        left: 'center',
     },
+
     tooltip: {
         trigger: 'axis'
     },
+
     legend: {
-        data: ['ssi', 'redis_rr', 'redis_rc', 'redis_ru', 'java_rr', 'java_rc', 'java_ru']
+        top: ' 5%',
+        data: ['s', 'redis_rr', 'redis_rc', 'redis_ru', 'java_rr', 'java_rc', 'java_ru']
     },
     grid: {
         top: '10%',
@@ -31,7 +35,7 @@ option = {
     },
     series: [
         {
-            name: 'ssi',
+            name: 's',
             type: 'line',
             data: [104.15886, 95.43045, 73.6668, 50.4695, 43.84827]
         },

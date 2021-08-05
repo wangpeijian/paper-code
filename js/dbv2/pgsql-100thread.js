@@ -1,13 +1,17 @@
 option = {
     color: ["#333", "#e01f54", '#e87c25', '#3fb1e3', '#6be6c1'],
     title: {
-        text: 'pgsql-100并发'
+        text: 'PostgreSQL事务不同冲突系数的吞吐量趋势',
+        left: 'center',
     },
+
     tooltip: {
         trigger: 'axis'
     },
+
     legend: {
-        data: ['ssi', 'redis_rr', 'redis_rc', 'java_rr', 'java_rc']
+        top: ' 5%',
+        data: ['s', 'redis_rr', 'redis_rc', 'java_rr', 'java_rc']
     },
     grid: {
         top: '10%',
@@ -31,7 +35,7 @@ option = {
     },
     series: [
         {
-            name: 'ssi',
+            name: 's',
             type: 'line',
 
             data: [130.53777, 125.97, 112.4504, 76.9257, 65.6667]
