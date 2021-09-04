@@ -1,4 +1,7 @@
 option = {
+    textStyle: {
+        fontSize: 16,
+    },
     color: ["#333", "#e01f54", '#e87c25', '#fcce10', '#3fb1e3', '#6be6c1', '#c4ebad'],
 
     // title: {
@@ -24,12 +27,18 @@ option = {
     },
 
     xAxis: {
+        axisLabel: {
+            fontSize: 16,
+        },
         type: 'category',
         boundaryGap: false,
         data: ['0.6', '0.8', '1.0', '1.2', '1.4'],
         name: 'zipf系数'
     },
     yAxis: {
+        axisLabel: {
+            fontSize: 16,
+        },
         type: 'value',
         min: 50,
         max: 170,
