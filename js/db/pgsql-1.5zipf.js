@@ -7,7 +7,7 @@ option = {
         trigger: 'axis'
     },
     legend: {
-        data: ['ssi', 'java_rc', 'java_rr', 'redis_rc', 'redis_rr']
+        data: ['ssi', '读已提交隔离级别+Java锁', '可重复读隔离级别+Java锁', '读已提交隔离级别+Redis锁', '可重复读隔离级别+Redis锁']
     },
     grid: {
         top: '10%',
@@ -38,26 +38,26 @@ option = {
         },
 
         {
-            name: 'java_rc',
+            name: '读已提交隔离级别+Java锁',
             type: 'line',
 
             data: [63.46548,64.6443,65.94198,62.64168,62.29224]
         },
         {
-            name: 'java_rr',
+            name: '可重复读隔离级别+Java锁',
             type: 'line',
 
             data: [59.26461,64.207,65.1816,62.8864,61.59105]
         },
 
         {
-            name: 'redis_rc',
+            name: '读已提交隔离级别+Redis锁',
             type: 'line',
 
             data: [48.62986,56.5461,54.52479,51.43005,50.2626]
         },
         {
-            name: 'redis_rr',
+            name: '可重复读隔离级别+Redis锁',
             type: 'line',
 
             data: [42.73598,45.81603,43.6425,42.4268,41.31617]

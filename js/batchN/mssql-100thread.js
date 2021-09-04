@@ -1,22 +1,22 @@
 option = {
     color: ["#333", "#e01f54", '#e87c25', '#fcce10', '#3fb1e3', '#6be6c1', '#c4ebad'],
-    title: {
-        text: 'SQL Server事务吞吐量趋势',
-        left: 'center',
-    },
+    // title: {
+    //      text: 'SQL Server事务吞吐量趋势',
+    //     left: 'center',
+    // },
 
     tooltip: {
         trigger: 'axis'
     },
 
     legend: {
-        top: ' 5%',
-        data: ['s', 'redis_rr', 'redis_rc', 'redis_ru', 'java_rr', 'java_rc', 'java_ru']
+        top: ' 0%',
+        data: ['可串行化隔离级别', '可重复读隔离级别+Redis锁', '读已提交隔离级别+Redis锁', '读未提交隔离级别+Redis锁', '可重复读隔离级别+Java锁', '读已提交隔离级别+Java锁', '读未提交隔离级别+Java锁']
     },
     grid: {
         top: '10%',
         left: '3%',
-        right: '10%',
+        right: '15%',
         bottom: '3%',
         containLabel: true
     },
@@ -25,7 +25,7 @@ option = {
         type: 'category',
         boundaryGap: false,
         data: ['1', '10', '20'],
-        name: '下单商品（个）'
+        name: '事务中锁定资源（个）'
     },
     yAxis: {
         type: 'value',
@@ -35,37 +35,37 @@ option = {
     },
     series: [
         {
-            name: 's',
+            name: '可串行化隔离级别',
             type: 'line',
             data: [238.4613,73.38786, 50.10096]
         },
         {
-            name: 'redis_rr',
+            name: '可重复读隔离级别+Redis锁',
             type: 'line',
             data: [216.06164,99.0851,62.28765]
         },
         {
-            name: 'redis_rc',
+            name: '读已提交隔离级别+Redis锁',
             type: 'line',
             data: [223.77976,100.33925, 65.49525]
         },
         {
-            name: 'redis_ru',
+            name: '读未提交隔离级别+Redis锁',
             type: 'line',
             data: [228.53816, 107.10315,68.07411 ]
         },
         {
-            name: 'java_rr',
+            name: '可重复读隔离级别+Java锁',
             type: 'line',
             data: [250.68615 ,117.32014,80.40869 ]
         },
         {
-            name: 'java_rc',
+            name: '读已提交隔离级别+Java锁',
             type: 'line',
             data: [258.50409, 121.62024, 82.71384]
         },
         {
-            name: 'java_ru',
+            name: '读未提交隔离级别+Java锁',
             type: 'line',
             data: [261.60414,124.25424, 83.2524]
         },
